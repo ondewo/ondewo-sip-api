@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package ondewo.sip;
+import "google/protobuf/empty.proto";
+
+service CallExecutor {
+    rpc StartCall (StartCallRequest) returns (StartCallResponse) {
+    };
+}
+
+message StartCallRequest{
+    string id = 1;
+}
+
+message StartCallResponse{
+    string call_id = 1;
+}
