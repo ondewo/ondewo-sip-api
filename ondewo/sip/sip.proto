@@ -3,7 +3,7 @@ syntax = "proto3";
 package ondewo.sip;
 import "google/protobuf/empty.proto";
 
-service CallExecutor {
+service Calls {
     rpc StartCall (StartCallRequest) returns (StartCallResponse) {
     };
 }
