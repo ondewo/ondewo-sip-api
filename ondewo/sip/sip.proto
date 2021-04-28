@@ -20,12 +20,22 @@ import "google/protobuf/empty.proto";
 service Calls {
     rpc StartCall (StartCallRequest) returns (StartCallResponse) {
     };
+    rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {
+    };
 }
 
 message StartCallRequest{
     string id = 1;
+    string csi_server_host = 2;
+    string csi_server_port = 3;
 }
 
 message StartCallResponse{
     string call_id = 1;
 }
+
+message RegisterAccountRequest{
+    string account_name = 1;
+}
+
+
