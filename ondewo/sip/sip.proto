@@ -22,7 +22,7 @@ service SipSessions {
     };
     /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
     /* }; */
-    rpc StartCall (StartCallRequest) returns (StartCallResponse) {
+    rpc StartCall (StartCallRequest) returns (google.protobuf.Empty) {
     };
     /* rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) { */
     /* }; */
@@ -33,13 +33,7 @@ service SipSessions {
 }
 
 message StartCallRequest{
-    string id = 1;
-    string csi_server_host = 2;
-    string csi_server_port = 3;
-}
-
-message StartCallResponse{
-    string call_id = 1;
+    string callee_id = 1;
 }
 
 message RegisterAccountRequest{
