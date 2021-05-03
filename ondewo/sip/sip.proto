@@ -20,14 +20,14 @@ import "google/protobuf/empty.proto";
 service SipSessions {
     rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {
     };
-    rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) {
-    };
+    /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
+    /* }; */
     rpc StartCall (StartCallRequest) returns (StartCallResponse) {
     };
-    rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) {
-    };
-    rpc TransferCall (TransferCallRequest) returns (TransferCallResponse) {
-    };
+    /* rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) { */
+    /* }; */
+    /* rpc TransferCall (TransferCallRequest) returns (TransferCallResponse) { */
+    /* }; */
     rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {
     };
 }
