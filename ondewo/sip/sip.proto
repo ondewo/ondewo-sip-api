@@ -19,8 +19,7 @@ import "google/protobuf/empty.proto";
 
 service Sip {
     rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
-    /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
-    /* }; */
+    rpc EndSession (google.protobuf.Empty) returns (google.protobuf.Empty) {};
     rpc StartCall (StartCallRequest) returns (google.protobuf.Empty) {};
     rpc EndCall (google.protobuf.Empty) returns (google.protobuf.Empty) {};
     rpc TransferCall (TransferCallRequest) returns (google.protobuf.Empty) {};
