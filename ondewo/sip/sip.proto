@@ -17,7 +17,7 @@ syntax = "proto3";
 package ondewo.sip;
 import "google/protobuf/empty.proto";
 
-service SipSessions {
+service Sip {
 //    rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
     /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
     /* }; */
