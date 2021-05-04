@@ -18,7 +18,7 @@ package ondewo.sip;
 import "google/protobuf/empty.proto";
 
 service SipSessions {
-//    rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
+    rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
     /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
     /* }; */
     rpc StartCall (StartCallRequest) returns (google.protobuf.Empty) {};
