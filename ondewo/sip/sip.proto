@@ -21,12 +21,16 @@ service Sip {
     rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
     rpc EndSession (google.protobuf.Empty) returns (google.protobuf.Empty) {};
     rpc StartCall (StartCallRequest) returns (google.protobuf.Empty) {};
-    rpc EndCall (google.protobuf.Empty) returns (google.protobuf.Empty) {};
+    rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) {};
     rpc TransferCall (TransferCallRequest) returns (google.protobuf.Empty) {};
     rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {};
     rpc GetSipStatus (google.protobuf.Empty) returns (SipStatus) {};
     rpc GetSipStatusHistory (google.protobuf.Empty) returns (SipStatusHistoryResponse) {};
     rpc PlayWavFiles (PlayWavFilesRequest) returns (google.protobuf.Empty) {};
+}
+
+message EndCallRequest{
+    bool hard_hangup = 1;
 }
 
 message StartCallRequest{
