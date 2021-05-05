@@ -26,6 +26,7 @@ service Sip {
     rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {};
     rpc GetSipStatus (google.protobuf.Empty) returns (SipStatus) {};
     rpc GetSipStatusHistory (google.protobuf.Empty) returns (SipStatusHistoryResponse) {};
+    rpc PlayWavFiles (PlayWavFilesRequest) returns (google.protobuf.Empty) {};
 }
 
 message StartCallRequest{
@@ -63,4 +64,8 @@ message SipStatus{
 
 message SipStatusHistoryResponse{
     repeated SipStatus status_history = 1;
+}
+
+message PlayWavFilesRequest{
+    repeated bytes wav_files = 1;
 }
