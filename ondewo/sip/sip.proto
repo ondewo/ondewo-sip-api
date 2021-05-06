@@ -55,11 +55,20 @@ message SipStatus{
     string account_name=1;
     int32 timestamp = 2;
     enum StatusType{
-        not_started = 0;
-        idle = 1;
-        incoming_call = 2;
-        outgoing_call = 3;
-        transfer_call = 4;
+        no_session = 0;
+        registered = 1;
+        ready = 2;
+        incoming_call_initiated = 3;
+        outgoing_call_initiated = 4;
+        outgoing_call_connected = 5;
+        incoming_call_connected = 6;
+        transfer_call_initiated = 7;
+        soft_hangup_initiated = 8;
+        hard_hangup_initiated = 9;
+        incoming_call_failed = 10;
+        outgoing_call_failed = 11;
+        incoming_call_finished = 12;
+        outgoing_call_finished = 13;
     }
     StatusType status_type = 3;
     string callee_id = 4;
