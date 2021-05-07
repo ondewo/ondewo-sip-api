@@ -53,7 +53,7 @@ message TransferCallRequest{
 
 message SipStatus{
     string account_name=1;
-    int32 timestamp = 2;
+    double timestamp = 2;
     enum StatusType{
         no_session = 0;
         registered = 1;
