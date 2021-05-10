@@ -16,6 +16,7 @@ syntax = "proto3";
 
 package ondewo.sip;
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 service Sip {
     rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
@@ -53,7 +54,7 @@ message TransferCallRequest{
 
 message SipStatus{
     string account_name=1;
-    double timestamp = 2;
+    google.protobuf.Timestamp timestamp = 2;
     enum StatusType{
         no_session = 0;
         registered = 1;
