@@ -16,38 +16,70 @@ syntax = "proto3";
 
 package ondewo.sip;
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 service Sip {
-    rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {
-    };
-    /* rpc EndSession (EndSessionRequest) returns (google.protobuf.Empty) { */
-    /* }; */
-    rpc StartCall (StartCallRequest) returns (StartCallResponse) {
-    };
-    /* rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) { */
-    /* }; */
-    /* rpc TransferCall (TransferCallRequest) returns (TransferCallResponse) { */
-    /* }; */
-    rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {
-    };
+    rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
+    rpc EndSession (google.protobuf.Empty) returns (google.protobuf.Empty) {};
+    rpc StartCall (StartCallRequest) returns (google.protobuf.Empty) {};
+    rpc EndCall (EndCallRequest) returns (google.protobuf.Empty) {};
+    rpc TransferCall (TransferCallRequest) returns (google.protobuf.Empty) {};
+    rpc RegisterAccount (RegisterAccountRequest) returns (google.protobuf.Empty) {};
+    rpc GetSipStatus (google.protobuf.Empty) returns (SipStatus) {};
+    rpc GetSipStatusHistory (google.protobuf.Empty) returns (SipStatusHistoryResponse) {};
+    rpc PlayWavFiles (PlayWavFilesRequest) returns (google.protobuf.Empty) {};
+}
+
+message EndCallRequest{
+    bool hard_hangup = 1;
 }
 
 message StartCallRequest{
-    string id = 1;
-    string csi_server_host = 2;
-    string csi_server_port = 3;
-}
-
-message StartCallResponse{
-    string call_id = 1;
+    string callee_id = 1;
 }
 
 message RegisterAccountRequest{
     string account_name = 1;
-    string password =2;
+    string password = 2;
 }
 
 message StartSessionRequest{
     string account_name = 1;
     int32 auto_answer_interval = 2;
+}
+
+message TransferCallRequest{
+    string transfer_id = 1;
+}
+
+message SipStatus{
+    string account_name=1;
+    google.protobuf.Timestamp timestamp = 2;
+    enum StatusType{
+        no_session = 0;
+        registered = 1;
+        ready = 2;
+        incoming_call_initiated = 3;
+        outgoing_call_initiated = 4;
+        outgoing_call_connected = 5;
+        incoming_call_connected = 6;
+        transfer_call_initiated = 7;
+        soft_hangup_initiated = 8;
+        hard_hangup_initiated = 9;
+        incoming_call_failed = 10;
+        outgoing_call_failed = 11;
+        incoming_call_finished = 12;
+        outgoing_call_finished = 13;
+    }
+    StatusType status_type = 3;
+    string callee_id = 4;
+    string transfer_call_id = 5;
+}
+
+message SipStatusHistoryResponse{
+    repeated SipStatus status_history = 1;
+}
+
+message PlayWavFilesRequest{
+    repeated bytes wav_files = 1;
 }
