@@ -70,8 +70,6 @@ message SipStatus{
         outgoing_call_failed = 11;
         incoming_call_finished = 12;
         outgoing_call_finished = 13;
-        started = 14;       // meta statuses for the vtsi server
-        finished = 15;      // meta statuses for the vtsi server
     }
     StatusType status_type = 3;
     string callee_id = 4;
