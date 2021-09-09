@@ -36,6 +36,7 @@ message EndCallRequest{
 
 message StartCallRequest{
     string callee_id = 1;
+    map<string,string> headers = 2;
 }
 
 message RegisterAccountRequest{
@@ -50,6 +51,7 @@ message StartSessionRequest{
 
 message TransferCallRequest{
     string transfer_id = 1;
+    map<string,string> headers = 2;
 }
 
 message SipStatus{
@@ -83,3 +85,4 @@ message SipStatusHistoryResponse{
 message PlayWavFilesRequest{
     repeated bytes wav_files = 1;
 }
+
