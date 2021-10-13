@@ -76,6 +76,8 @@ message SipStatus{
     StatusType status_type = 3;
     string callee_id = 4;
     string transfer_call_id = 5;
+    map<string,string> headers = 6;
+
 }
 
 message SipStatusHistoryResponse{
