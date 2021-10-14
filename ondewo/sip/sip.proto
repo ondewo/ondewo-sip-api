@@ -17,6 +17,7 @@ syntax = "proto3";
 package ondewo.sip;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
 service Sip {
     rpc StartSession (StartSessionRequest) returns (google.protobuf.Empty) {};
@@ -76,7 +77,7 @@ message SipStatus{
     StatusType status_type = 3;
     string callee_id = 4;
     string transfer_call_id = 5;
-    map<string,string> headers = 6;
+    map<string,google.protobuf.Any> headers = 6;
 
 }
 
