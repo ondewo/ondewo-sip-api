@@ -28,6 +28,8 @@ service Sip {
     rpc GetSipStatus (google.protobuf.Empty) returns (SipStatus) {};
     rpc GetSipStatusHistory (google.protobuf.Empty) returns (SipStatusHistoryResponse) {};
     rpc PlayWavFiles (PlayWavFilesRequest) returns (google.protobuf.Empty) {};
+    rpc Mute (google.protobuf.Empty) returns (google.protobuf.Empty) {};
+    rpc UnMute (google.protobuf.Empty) returns (google.protobuf.Empty) {};
 }
 
 message EndCallRequest{
