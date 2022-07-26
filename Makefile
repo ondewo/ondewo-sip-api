@@ -81,7 +81,7 @@ TEST:
 	@echo ${CURRENT_RELEASE_NOTES}
 
 run_release_with_devops:
-	$(eval info:= $(shell cat ${DEVOPS_ACCOUNT_DIR}/account_github.env | grep GITHUB_GH & cat ${DEVOPS_ACCOUNT_DIR}/account_pypi.env | grep PYPI_USERNAME & cat ${DEVOPS_ACCOUNT_DIR}/account_pypi.env | grep PYPI_PASSWORD))
+	$(eval info:= $(shell cat ${DEVOPS_ACCOUNT_DIR}/account_github.env | grep GITHUB_GH ))
 	make release $(info)
 
 spc: ## Checks if the Release Branch, Tag and Pypi version already exist
