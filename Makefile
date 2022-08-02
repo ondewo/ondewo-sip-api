@@ -17,7 +17,7 @@ export
 
 # MUST BE THE SAME AS API in Mayor and Minor Version Number
 # example: API 2.9.0 --> Client 2.9.X
-ONDEWO_SIP_API_VERSION=3.0.0
+ONDEWO_SIP_API_VERSION=3.1.0
 
 
 # You need to setup an access token at https://github.com/settings/tokens - permissions are important
@@ -46,9 +46,6 @@ install_precommit_hooks: ## Installs pre-commit hooks and sets them up for the o
 
 precommit_hooks_run_all_files: ## Runs all pre-commit hooks on all files and not just the changed ones
 	pre-commit run --all-file
-
-flake8:
-	flake8
 
 help: ## Print usage info about help targets
 	# (first comment after target starting with double hashes ##)
