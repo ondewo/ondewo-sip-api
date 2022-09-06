@@ -117,16 +117,16 @@ release_client:
 	cd ${REPO_DIR} && sed -i -e 's/ONDEWO_PROTO_COMPILER_GIT_BRANCH.*=.*tags\/[0-9]*.[0-9]*.[0-9]/ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags\/${PROTO_COMPILER}/' Makefile
 	cd ${REPO_DIR} && sed -i -e 's/SIP_API_GIT_BRANCH=tags\/[0-9]*.[0-9]*.[0-9]/SIP_API_GIT_BRANCH=tags\/${ONDEWO_SIP_API_VERSION}/' Makefile && head -30 Makefile
 
-# # Build new code
-# 	make -C ${REPO_DIR} build | tee build_log_${REPO_NAME}.txt
-# 	make -C ${REPO_DIR} check_build
-# 	git -C ${REPO_DIR} status >> build_log_${REPO_NAME}.txt
-# 	git -C ${REPO_DIR} add .
-# 	echo "AFTER GIT ADD" >> build_log_${REPO_NAME}.txt && git -C ${REPO_DIR} status >> build_log_${REPO_NAME}.txt
-# 	git -C ${REPO_DIR} commit -m "API-Release: Preparing for Release ${ONDEWO_SIP_API_VERSION}"
-# 	git -C ${REPO_DIR} push
-# 	make -C ${REPO_DIR} ondewo_release
-# # Remove everything from Release
+# Build new code
+	make -C ${REPO_DIR} build | tee build_log_${REPO_NAME}.txt
+	make -C ${REPO_DIR} check_build
+	git -C ${REPO_DIR} status >> build_log_${REPO_NAME}.txt
+	git -C ${REPO_DIR} add .
+	echo "AFTER GIT ADD" >> build_log_${REPO_NAME}.txt && git -C ${REPO_DIR} status >> build_log_${REPO_NAME}.txt
+	git -C ${REPO_DIR} commit -m "API-Release: Preparing for Release ${ONDEWO_SIP_API_VERSION}"
+	git -C ${REPO_DIR} push
+	make -C ${REPO_DIR} ondewo_release
+# Remove everything from Release
 	rm -rf ${REPO_DIR}
 	rm -f temp-notes
 
