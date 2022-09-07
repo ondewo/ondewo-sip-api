@@ -126,13 +126,13 @@ message SipMicrophoneResponse{
     enum SipMicrophoneType{
 
         // Microphone is muted
-        SIP_MICROPHONE_MUTED = 1;
+        SIP_MICROPHONE_MUTED = 0;
 
         // Microphone is unmuted
-        SIP_MICROPHONE_UNMUTED = 2;
+        SIP_MICROPHONE_UNMUTED = 1;
         
         // Microphone has played wav files
-        SIP_MICROPHONE_WAV_FILES_PLAYED = 3;
+        SIP_MICROPHONE_WAV_FILES_PLAYED = 2;
     }
 }
 
