@@ -87,7 +87,7 @@ message RegisterAccountRequest{
     string auth_username = 3;
 
     // Optional: outbound proxy address, e.g. <pre>myoutboundproxy.com</pre>
-    string outbound_proxy = 3;
+    string outbound_proxy = 4;
 }
 
 // Request for starting a new SIP session for a specified account
