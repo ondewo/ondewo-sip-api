@@ -7,6 +7,7 @@
     - [EndCallRequest](#ondewo.sip.EndCallRequest)
     - [PlayWavFilesRequest](#ondewo.sip.PlayWavFilesRequest)
     - [RegisterAccountRequest](#ondewo.sip.RegisterAccountRequest)
+    - [SipMicrophoneResponse](#ondewo.sip.SipMicrophoneResponse)
     - [SipStatus](#ondewo.sip.SipStatus)
     - [SipStatus.HeadersEntry](#ondewo.sip.SipStatus.HeadersEntry)
     - [SipStatusHistoryResponse](#ondewo.sip.SipStatusHistoryResponse)
@@ -16,6 +17,7 @@
     - [TransferCallRequest](#ondewo.sip.TransferCallRequest)
     - [TransferCallRequest.HeadersEntry](#ondewo.sip.TransferCallRequest.HeadersEntry)
   
+    - [SipMicrophoneResponse.SipMicrophoneType](#ondewo.sip.SipMicrophoneResponse.SipMicrophoneType)
     - [SipStatus.StatusType](#ondewo.sip.SipStatus.StatusType)
   
     - [Sip](#ondewo.sip.Sip)
@@ -34,12 +36,12 @@
 <a name="ondewo.sip.EndCallRequest"></a>
 
 ### EndCallRequest
-
+Ends an ongoing call of the active SIP session of the active SIP account
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hard_hangup | [bool](#bool) |  |  |
+| hard_hangup | [bool](#bool) |  | Set to <pre>True</pre> to forcefully hang up the call |
 
 
 
@@ -49,12 +51,12 @@
 <a name="ondewo.sip.PlayWavFilesRequest"></a>
 
 ### PlayWavFilesRequest
-
+Plays a list of wav files
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| wav_files | [bytes](#bytes) | repeated |  |
+| wav_files | [bytes](#bytes) | repeated | Wav files as bytes in a list that will be played |
 
 
 
@@ -69,8 +71,26 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  |  |
-| password | [string](#string) |  |  |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| password | [string](#string) |  | Password of the account |
+| auth_username | [string](#string) |  | Optional: authentication user name |
+| outbound_proxy | [string](#string) |  | Optional: outbound proxy address, e.g. <pre>myoutboundproxy.com</pre> |
+
+
+
+
+
+
+<a name="ondewo.sip.SipMicrophoneResponse"></a>
+
+### SipMicrophoneResponse
+Microphone respone
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| timestamp | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | Timestamp of the status |
 
 
 
@@ -85,12 +105,12 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  |  |
-| timestamp | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  |  |
-| status_type | [SipStatus.StatusType](#ondewo.sip.SipStatus.StatusType) |  |  |
-| callee_id | [string](#string) |  |  |
-| transfer_call_id | [string](#string) |  |  |
-| headers | [SipStatus.HeadersEntry](#ondewo.sip.SipStatus.HeadersEntry) | repeated |  |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| timestamp | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | Timestamp of the status |
+| status_type | [SipStatus.StatusType](#ondewo.sip.SipStatus.StatusType) |  | Status type |
+| callee_id | [string](#string) |  | SIP account name |
+| transfer_call_id | [string](#string) |  | SIP account of the transfer |
+| headers | [SipStatus.HeadersEntry](#ondewo.sip.SipStatus.HeadersEntry) | repeated | Headers to include when calling outbound or transfer |
 
 
 
@@ -116,12 +136,12 @@
 <a name="ondewo.sip.SipStatusHistoryResponse"></a>
 
 ### SipStatusHistoryResponse
-
+History of SIP status
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| status_history | [SipStatus](#ondewo.sip.SipStatus) | repeated |  |
+| status_history | [SipStatus](#ondewo.sip.SipStatus) | repeated | History of SIP status |
 
 
 
@@ -131,13 +151,13 @@
 <a name="ondewo.sip.StartCallRequest"></a>
 
 ### StartCallRequest
-
+Request to start the call with the active SIP session of the active SIP account
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| callee_id | [string](#string) |  |  |
-| headers | [StartCallRequest.HeadersEntry](#ondewo.sip.StartCallRequest.HeadersEntry) | repeated |  |
+| callee_id | [string](#string) |  | SIP account name |
+| headers | [StartCallRequest.HeadersEntry](#ondewo.sip.StartCallRequest.HeadersEntry) | repeated | Headers to include when starting the call |
 
 
 
@@ -163,13 +183,13 @@
 <a name="ondewo.sip.StartSessionRequest"></a>
 
 ### StartSessionRequest
-
+Request for starting a new SIP session for a specified account
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  |  |
-| auto_answer_interval | [int32](#int32) |  |  |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| auto_answer_interval | [int32](#int32) |  | answer interval |
 
 
 
@@ -179,13 +199,13 @@
 <a name="ondewo.sip.TransferCallRequest"></a>
 
 ### TransferCallRequest
-
+Request for tranfering a call with or without headers
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| transfer_id | [string](#string) |  |  |
-| headers | [TransferCallRequest.HeadersEntry](#ondewo.sip.TransferCallRequest.HeadersEntry) | repeated |  |
+| transfer_id | [string](#string) |  | The account name or phone number to transfer the call to |
+| headers | [TransferCallRequest.HeadersEntry](#ondewo.sip.TransferCallRequest.HeadersEntry) | repeated | The headers to include when transfering the call |
 
 
 
@@ -210,27 +230,43 @@
  <!-- end messages -->
 
 
-<a name="ondewo.sip.SipStatus.StatusType"></a>
+<a name="ondewo.sip.SipMicrophoneResponse.SipMicrophoneType"></a>
 
-### SipStatus.StatusType
-
+### SipMicrophoneResponse.SipMicrophoneType
+Microphone status
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
-| no_session | 0 |  |
-| registered | 1 |  |
-| ready | 2 |  |
-| incoming_call_initiated | 3 |  |
-| outgoing_call_initiated | 4 |  |
-| outgoing_call_connected | 5 |  |
-| incoming_call_connected | 6 |  |
-| transfer_call_initiated | 7 |  |
-| soft_hangup_initiated | 8 |  |
-| hard_hangup_initiated | 9 |  |
-| incoming_call_failed | 10 |  |
-| outgoing_call_failed | 11 |  |
-| incoming_call_finished | 12 |  |
-| outgoing_call_finished | 13 |  |
+| SIP_MICROPHONE_MUTED | 0 | Microphone is muted |
+| SIP_MICROPHONE_UNMUTED | 1 | Microphone is unmuted |
+| SIP_MICROPHONE_WAV_FILES_PLAYED | 2 | Microphone has played wav files |
+
+
+
+<a name="ondewo.sip.SipStatus.StatusType"></a>
+
+### SipStatus.StatusType
+Types of status
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| NO_SESSION | 0 | No session is currently active |
+| REGISTERED | 1 | SIP account is registered at a SIP server |
+| READY | 2 | SIP account is ready to call |
+| INCOMING_CALL_INITIATED | 3 | SIP account is being called, i.e. inbound/incoming call |
+| OUTGOING_CALL_INITIATED | 4 | SIP account starts calling, i.e. outbound/outgoing call |
+| OUTGOING_CALL_CONNECTED | 5 | SIP account outbound call is connected |
+| INCOMING_CALL_CONNECTED | 6 | SIP account incoming call is conneted |
+| TRANSFER_CALL_INITIATED | 7 | SIP account starts transfering the call |
+| SOFT_HANGUP_INITIATED | 8 | SIP account hangs up the ongoing call |
+| HARD_HANGUP_INITIATED | 9 | SIP account forcefully hangs up by terminating the SIP program |
+| INCOMING_CALL_FAILED | 10 | SIP account cannot accept the incoming call |
+| OUTGOING_CALL_FAILED | 11 | SIP account cannot do an outbound call |
+| INCOMING_CALL_FINISHED | 12 | SIP account finished the ongoing incoming call |
+| OUTGOING_CALL_FINISHED | 13 | SIP account finished the ongoing outgoing call |
+| SESSION_REGISTRATION_FAILED | 14 | Registration of SIP account to SIP server failed |
+| SESSION_STARTED | 15 | SIP account started a new SIP session via a SIP server |
+| SESSION_ENDED | 16 | SIP account ended active sip session with SIP server |
 
 
  <!-- end enums -->
@@ -241,21 +277,21 @@
 <a name="ondewo.sip.Sip"></a>
 
 ### Sip
-
+SIP LifeCyle explained at https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| StartSession | [StartSessionRequest](#ondewo.sip.StartSessionRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| EndSession | [.google.protobuf.Empty](#google.protobuf.Empty) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| StartCall | [StartCallRequest](#ondewo.sip.StartCallRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| EndCall | [EndCallRequest](#ondewo.sip.EndCallRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| TransferCall | [TransferCallRequest](#ondewo.sip.TransferCallRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| RegisterAccount | [RegisterAccountRequest](#ondewo.sip.RegisterAccountRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| GetSipStatus | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatus](#ondewo.sip.SipStatus) |  |
-| GetSipStatusHistory | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatusHistoryResponse](#ondewo.sip.SipStatusHistoryResponse) |  |
-| PlayWavFiles | [PlayWavFilesRequest](#ondewo.sip.PlayWavFilesRequest) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| Mute | [.google.protobuf.Empty](#google.protobuf.Empty) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
-| UnMute | [.google.protobuf.Empty](#google.protobuf.Empty) | [.google.protobuf.Empty](#google.protobuf.Empty) |  |
+| StartSession | [StartSessionRequest](#ondewo.sip.StartSessionRequest) | [SipStatus](#ondewo.sip.SipStatus) | Starts a new SIP session for an account registered at a SIP server. <pre>RegisterAccount</pre> need to be called before. |
+| EndSession | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatus](#ondewo.sip.SipStatus) | Ends a SIP session for an account registered at a SIP server |
+| StartCall | [StartCallRequest](#ondewo.sip.StartCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Starts a call in an active SIP session for an account registered at a SIP server |
+| EndCall | [EndCallRequest](#ondewo.sip.EndCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Ends a call in an active SIP session for an account registered at a SIP server |
+| TransferCall | [TransferCallRequest](#ondewo.sip.TransferCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Transfers a call in an active SIP session for an account registered at a SIP server to another SIP account or phone number specified by <pre>tranfer_id</pre> |
+| RegisterAccount | [RegisterAccountRequest](#ondewo.sip.RegisterAccountRequest) | [SipStatus](#ondewo.sip.SipStatus) | Registers s SIP account at a SIP server |
+| GetSipStatus | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatus](#ondewo.sip.SipStatus) | Gets the current SIP status |
+| GetSipStatusHistory | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatusHistoryResponse](#ondewo.sip.SipStatusHistoryResponse) | Gets the history of SIP status |
+| PlayWavFiles | [PlayWavFilesRequest](#ondewo.sip.PlayWavFilesRequest) | [SipMicrophoneResponse](#ondewo.sip.SipMicrophoneResponse) | Plays wav files during an ongoing call of an active SIP session |
+| Mute | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipMicrophoneResponse](#ondewo.sip.SipMicrophoneResponse) | Mutes the microphone in an ongoing call of an active SIP session |
+| UnMute | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipMicrophoneResponse](#ondewo.sip.SipMicrophoneResponse) | Unmutes the microphone in an ongoing call of an active SIP session |
 
  <!-- end services -->
 
