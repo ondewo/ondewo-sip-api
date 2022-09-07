@@ -40,10 +40,10 @@ service Sip {
     // Registers s SIP account at a SIP server
     rpc RegisterAccount (RegisterAccountRequest) returns (SipStatus) {};
 
-    // Gets the status of a SIP account
+    // Gets the current SIP status
     rpc GetSipStatus (google.protobuf.Empty) returns (SipStatus) {};
     
-    // Gets the history of status of a SIP account
+    // Gets the history of SIP status
     rpc GetSipStatusHistory (google.protobuf.Empty) returns (SipStatusHistoryResponse) {};
     
     // Plays wav files during an ongoing call of an active SIP session
