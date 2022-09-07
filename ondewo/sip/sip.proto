@@ -19,7 +19,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service Sip {
-    // SIP LifeCyle explalined at https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/
+    // SIP LifeCyle explained at https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/
 
     // Starts a new SIP session for an account registered at a SIP server. <pre>RegisterAccount</pre> need to be called before.
     rpc StartSession (StartSessionRequest) returns (SipStatus) {};
