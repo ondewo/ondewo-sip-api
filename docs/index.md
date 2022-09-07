@@ -41,7 +41,7 @@ Ends an ongoing call of the active SIP session of the active SIP account
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| hard_hangup | [bool](#bool) |  | Set to <pre>True</pre> to forcefully hang up the call |
+| hard_hangup | [bool](#bool) |  | Set to <code>True</code> to forcefully hang up the call |
 
 
 
@@ -71,10 +71,10 @@ Plays a list of wav files
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>. Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code> |
 | password | [string](#string) |  | Password of the account |
 | auth_username | [string](#string) |  | Optional: authentication user name |
-| outbound_proxy | [string](#string) |  | Optional: outbound proxy address, e.g. <pre>myoutboundproxy.com</pre> |
+| outbound_proxy | [string](#string) |  | Optional: outbound proxy address, e.g. <code>myoutboundproxy.com</code> |
 
 
 
@@ -89,7 +89,7 @@ Microphone respone
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>. Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code> |
 | timestamp | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | Timestamp of the status |
 
 
@@ -105,7 +105,7 @@ Microphone respone
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>. Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code> |
 | timestamp | [google.protobuf.Timestamp](#google.protobuf.Timestamp) |  | Timestamp of the status |
 | status_type | [SipStatus.StatusType](#ondewo.sip.SipStatus.StatusType) |  | Status type |
 | callee_id | [string](#string) |  | SIP account name |
@@ -188,7 +188,7 @@ Request for starting a new SIP session for a specified account
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| account_name | [string](#string) |  | Account name of the sip user. Usually something like <pre>sip-user-1@mydomain.com</pre> or <pre>sip-user-1@192.168.123.123</pre> which uses the default SIP port <pre>5060</pre>. Also a non-default SIP port can be specified via <pre>sip-user-1@mydomain.com:5099</pre> to connect to a SIP server running on port <pre>5099</pre> |
+| account_name | [string](#string) |  | Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>. Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code> |
 | auto_answer_interval | [int32](#int32) |  | answer interval |
 
 
@@ -277,15 +277,17 @@ Types of status
 <a name="ondewo.sip.Sip"></a>
 
 ### Sip
-SIP LifeCyle explained at https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/
+ONDEWO-SIP API available at <a href="https://github.com/ondewo/ondewo-sip-api>">GitHub</a>
+
+SIP LifeCyle is explained at <a href="https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/">here</a>
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| StartSession | [StartSessionRequest](#ondewo.sip.StartSessionRequest) | [SipStatus](#ondewo.sip.SipStatus) | Starts a new SIP session for an account registered at a SIP server. <pre>RegisterAccount</pre> need to be called before. |
+| StartSession | [StartSessionRequest](#ondewo.sip.StartSessionRequest) | [SipStatus](#ondewo.sip.SipStatus) | Starts a new SIP session for an account registered at a SIP server. <code>RegisterAccount</code> need to be called before. |
 | EndSession | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatus](#ondewo.sip.SipStatus) | Ends a SIP session for an account registered at a SIP server |
 | StartCall | [StartCallRequest](#ondewo.sip.StartCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Starts a call in an active SIP session for an account registered at a SIP server |
 | EndCall | [EndCallRequest](#ondewo.sip.EndCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Ends a call in an active SIP session for an account registered at a SIP server |
-| TransferCall | [TransferCallRequest](#ondewo.sip.TransferCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Transfers a call in an active SIP session for an account registered at a SIP server to another SIP account or phone number specified by <pre>tranfer_id</pre> |
+| TransferCall | [TransferCallRequest](#ondewo.sip.TransferCallRequest) | [SipStatus](#ondewo.sip.SipStatus) | Transfers a call in an active SIP session for an account registered at a SIP server to another SIP account or phone number specified by <code>tranfer_id</code> |
 | RegisterAccount | [RegisterAccountRequest](#ondewo.sip.RegisterAccountRequest) | [SipStatus](#ondewo.sip.SipStatus) | Registers s SIP account at a SIP server |
 | GetSipStatus | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatus](#ondewo.sip.SipStatus) | Gets the current SIP status |
 | GetSipStatusHistory | [.google.protobuf.Empty](#google.protobuf.Empty) | [SipStatusHistoryResponse](#ondewo.sip.SipStatusHistoryResponse) | Gets the history of SIP status |
