@@ -1,6 +1,12 @@
 # Release History
 *****************
 
+## Release ONDEWO SIP API 3.2.0
+
+### New Features
+ * [[OND236-20]](https://ondewo.atlassian.net/browse/OND236-20) - Refactor SIP and provide better API interfaces and documentation
+
+*****************
 ## Release ONDEWO SIP API 3.1.0
 
 ### New Features
