@@ -87,10 +87,6 @@
                       </li>
                     
                       <li>
-                        <a href="#ondewo.sip.SipMicrophoneResponse" class="title-badge message">SipMicrophoneResponse</a>
-                      </li>
-                    
-                      <li>
                         <a href="#ondewo.sip.SipStatus" class="title-badge message">SipStatus</a>
                       </li>
                     
@@ -129,10 +125,6 @@
                   <ul>
                     
                       <li>
-                        <a href="#ondewo.sip.SipMicrophoneResponse.SipMicrophoneType" class="title-badge enum">SipMicrophoneResponse.SipMicrophoneType</a>
-                      </li>
-                    
-                      <li>
                         <a href="#ondewo.sip.SipStatus.StatusType" class="title-badge enum">SipStatus.StatusType</a>
                       </li>
                     
@@ -162,7 +154,7 @@
       
         
         <h3 id="ondewo.sip.Sip" class="title-badge service">Sip</h3>
-        <p>ONDEWO-SIP API available at <a href="https://github.com/ondewo/ondewo-sip-api>">GitHub</a></p><p>SIP LifeCyle is explained at <a href="https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/">here</a></p>
+        <p>ONDEWO-SIP API available at <a href="https://github.com/ondewo/ondewo-sip-api>">GitHub</a></p><p>SIP LifeCycle is explained at <a href="https://thanhloi2603.wordpress.com/2017/06/10/sip-lifecycle-overview/">here</a></p>
 
         
         <div id="ondewo.sip.Sip-methods" class="service-methods">Service Methods</div>
@@ -195,8 +187,8 @@
 
           <pre>rpc TransferCall (<a href="#ondewo.sip.TransferCallRequest">TransferCallRequest</a>) returns (<a href="#ondewo.sip.SipStatus">SipStatus)</a></pre>
 
-          Transfers a call in an active SIP session for an account registered at a SIP server to 
-another SIP account or phone number specified by <code>tranfer_id</code>
+          Transfers a call in an active SIP session for an account registered at a SIP server to
+another SIP account or phone number specified by <code>transfer_id</code>
         
           <h4 id="ondewo.sip.Sip.RegisterAccount" class="title-badge method">RegisterAccount</h4>
 
@@ -218,19 +210,19 @@ another SIP account or phone number specified by <code>tranfer_id</code>
         
           <h4 id="ondewo.sip.Sip.PlayWavFiles" class="title-badge method">PlayWavFiles</h4>
 
-          <pre>rpc PlayWavFiles (<a href="#ondewo.sip.PlayWavFilesRequest">PlayWavFilesRequest</a>) returns (<a href="#ondewo.sip.SipMicrophoneResponse">SipMicrophoneResponse)</a></pre>
+          <pre>rpc PlayWavFiles (<a href="#ondewo.sip.PlayWavFilesRequest">PlayWavFilesRequest</a>) returns (<a href="#ondewo.sip.SipStatus">SipStatus)</a></pre>
 
           Plays wav files during an ongoing call of an active SIP session
         
           <h4 id="ondewo.sip.Sip.Mute" class="title-badge method">Mute</h4>
 
-          <pre>rpc Mute (<a href="#google.protobuf.Empty">.google.protobuf.Empty</a>) returns (<a href="#ondewo.sip.SipMicrophoneResponse">SipMicrophoneResponse)</a></pre>
+          <pre>rpc Mute (<a href="#google.protobuf.Empty">.google.protobuf.Empty</a>) returns (<a href="#ondewo.sip.SipStatus">SipStatus)</a></pre>
 
           Mutes the microphone in an ongoing call of an active SIP session
         
           <h4 id="ondewo.sip.Sip.UnMute" class="title-badge method">UnMute</h4>
 
-          <pre>rpc UnMute (<a href="#google.protobuf.Empty">.google.protobuf.Empty</a>) returns (<a href="#ondewo.sip.SipMicrophoneResponse">SipMicrophoneResponse)</a></pre>
+          <pre>rpc UnMute (<a href="#google.protobuf.Empty">.google.protobuf.Empty</a>) returns (<a href="#ondewo.sip.SipStatus">SipStatus)</a></pre>
 
           Unmutes the microphone in an ongoing call of an active SIP session
         
@@ -305,7 +297,7 @@ another SIP account or phone number specified by <code>tranfer_id</code>
                   <td>account_name</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or 
+                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or
 <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
 Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect
 to a SIP server running on port <code>5099</code> </p></td>
@@ -329,41 +321,7 @@ to a SIP server running on port <code>5099</code> </p></td>
                   <td>outbound_proxy</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Optional: outbound proxy address, e.g. <code>myoutboundproxy.com</code> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="ondewo.sip.SipMicrophoneResponse" class="title-badge message">SipMicrophoneResponse</h3>
-        <p>Microphone respone</p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>account_name</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or 
-<code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
-Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect
-to a SIP server running on port <code>5099</code> </p></td>
-                </tr>
-              
-                <tr>
-                  <td>timestamp</td>
-                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
-                  <td></td>
-                  <td><p>Timestamp of the status </p></td>
+                  <td><p>Optional: outbound proxy address, e.g. <code>my.outbound.proxy.com</code> </p></td>
                 </tr>
               
             </tbody>
@@ -387,7 +345,7 @@ to a SIP server running on port <code>5099</code> </p></td>
                   <td>account_name</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or 
+                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or
 <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
 Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect
 to a SIP server running on port <code>5099</code> </p></td>
@@ -426,6 +384,27 @@ to a SIP server running on port <code>5099</code> </p></td>
                   <td><a href="#ondewo.sip.SipStatus.HeadersEntry">SipStatus.HeadersEntry</a></td>
                   <td>repeated</td>
                   <td><p>Headers to include when calling outbound or transfer </p></td>
+                </tr>
+              
+                <tr>
+                  <td>description</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>More detailed description of the status </p></td>
+                </tr>
+              
+                <tr>
+                  <td>exception_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Name of the exception </p></td>
+                </tr>
+              
+                <tr>
+                  <td>exception_traceback</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Traceback of the exception </p></td>
                 </tr>
               
             </tbody>
@@ -566,7 +545,7 @@ to a SIP server running on port <code>5099</code> </p></td>
                   <td>account_name</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or 
+                  <td><p>Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or
 <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
 Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect
 to a SIP server running on port <code>5099</code> </p></td>
@@ -587,7 +566,7 @@ to a SIP server running on port <code>5099</code> </p></td>
         
       
         <h3 id="ondewo.sip.TransferCallRequest" class="title-badge message">TransferCallRequest</h3>
-        <p>Request for tranfering a call with or without headers</p>
+        <p>Request for transferring a call with or without headers</p>
 
         
           <table class="field-table">
@@ -607,7 +586,7 @@ to a SIP server running on port <code>5099</code> </p></td>
                   <td>headers</td>
                   <td><a href="#ondewo.sip.TransferCallRequest.HeadersEntry">TransferCallRequest.HeadersEntry</a></td>
                   <td>repeated</td>
-                  <td><p>The headers to include when transfering the call </p></td>
+                  <td><p>The headers to include when transferring the call </p></td>
                 </tr>
               
             </tbody>
@@ -652,35 +631,6 @@ to a SIP server running on port <code>5099</code> </p></td>
 
       
       <div id="ondewo/sip/sip.proto-enums" class="object-category">Enums</div>
-      
-        <h3 id="ondewo.sip.SipMicrophoneResponse.SipMicrophoneType" class="title-badge enum">SipMicrophoneResponse.SipMicrophoneType</h3>
-        <p>Microphone status</p>
-        <table class="enum-table">
-          <thead>
-            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
-          </thead>
-          <tbody>
-            
-              <tr>
-                <td>SIP_MICROPHONE_MUTED</td>
-                <td>0</td>
-                <td><p>Microphone is muted</p></td>
-              </tr>
-            
-              <tr>
-                <td>SIP_MICROPHONE_UNMUTED</td>
-                <td>1</td>
-                <td><p>Microphone is unmuted</p></td>
-              </tr>
-            
-              <tr>
-                <td>SIP_MICROPHONE_WAV_FILES_PLAYED</td>
-                <td>2</td>
-                <td><p>Microphone has played wav files</p></td>
-              </tr>
-            
-          </tbody>
-        </table>
       
         <h3 id="ondewo.sip.SipStatus.StatusType" class="title-badge enum">SipStatus.StatusType</h3>
         <p>Types of status</p>
@@ -729,13 +679,13 @@ to a SIP server running on port <code>5099</code> </p></td>
               <tr>
                 <td>INCOMING_CALL_CONNECTED</td>
                 <td>6</td>
-                <td><p>SIP account incoming call is conneted</p></td>
+                <td><p>SIP account incoming call is connected</p></td>
               </tr>
             
               <tr>
                 <td>TRANSFER_CALL_INITIATED</td>
                 <td>7</td>
-                <td><p>SIP account starts transfering the call</p></td>
+                <td><p>SIP account starts transferring the call</p></td>
               </tr>
             
               <tr>
@@ -790,6 +740,36 @@ to a SIP server running on port <code>5099</code> </p></td>
                 <td>SESSION_ENDED</td>
                 <td>16</td>
                 <td><p>SIP account ended active sip session with SIP server</p></td>
+              </tr>
+            
+              <tr>
+                <td>TRANSFER_CALL_FAILED</td>
+                <td>17</td>
+                <td><p>SIP account cannot transfer the call</p></td>
+              </tr>
+            
+              <tr>
+                <td>MICROPHONE_MUTED</td>
+                <td>18</td>
+                <td><p>Microphone is muted</p></td>
+              </tr>
+            
+              <tr>
+                <td>MICROPHONE_UNMUTED</td>
+                <td>19</td>
+                <td><p>Microphone is unmuted</p></td>
+              </tr>
+            
+              <tr>
+                <td>MICROPHONE_WAV_FILES_PLAYED</td>
+                <td>20</td>
+                <td><p>Microphone has played wav files</p></td>
+              </tr>
+            
+              <tr>
+                <td>NO_ONGOING_CALL</td>
+                <td>21</td>
+                <td><p>No ongoing call</p></td>
               </tr>
             
           </tbody>
