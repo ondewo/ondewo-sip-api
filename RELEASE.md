@@ -2,6 +2,14 @@
 
 *****************
 
+## Release ONDEWO SIP API 4.0.0
+
+### Improvements
+
+* Synchronize API Client Versions
+
+*****************
+
 ## Release ONDEWO SIP API 3.3.0
 
 ### New Features
