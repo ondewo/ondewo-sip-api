@@ -2,6 +2,14 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.0.0
+
+### Improvements
+
+* Prefix endpoints with "Sip"
+
+*****************
+
 ## Release ONDEWO SIP API 4.0.0
 
 ### Improvements
