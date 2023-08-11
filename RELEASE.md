@@ -2,6 +2,14 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.1.0
+
+### Improvements
+
+* [[OND236-35]](https://ondewo.atlassian.net/browse/OND236-35) - Added nlu_session_name to SipStatus
+
+*****************
+
 ## Release ONDEWO SIP API 5.0.0
 
 ### Improvements
