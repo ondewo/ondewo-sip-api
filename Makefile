@@ -172,7 +172,7 @@ release_client:
 # Get newest Proto-Compiler Version
 	$(eval PROTO_COMPILER:= $(shell curl https://api.github.com/repos/ondewo/ondewo-proto-compiler/tags | grep "\"name\"" | head -1 | cut -d '"' -f 4))
 # Clone Repo
-	rm -rf ${REPO_DIR}
+	rm -rf ${REPO_DIR} || sudo rm -rf ${REPO_DIR}
 	rm -f build_log_${REPO_NAME}.txt
 
 	@echo ${GENERIC_RELEASE_NOTES} > temp-notes && sed -i 's/\\//g' temp-notes && sed -i 's/REPONAME/${UPPER_REPO_NAME}/g' temp-notes
