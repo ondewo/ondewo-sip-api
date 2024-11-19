@@ -1,4 +1,11 @@
 # Release History
+*****************
+
+## Release ONDEWO SIP API 5.2.0
+
+### Improvements
+
+* Updated SIP clients to ONDEWO Proto Compiler [[5.2.0]](https://github.com/ondewo/ondewo-proto-compiler/releases/tag/5.2.0)
 
 *****************
 
@@ -6,7 +13,7 @@
 
 ### Improvements
 
-* [[OND236-35]](https://ondewo.atlassian.net/browse/OND236-35) - Added nlu_session_name to SipStatus
+* [[OND236-35]](https://ondewo.atlassian.net/browse/OND236-35) Added nlu_session_name to SipStatus
 
 *****************
 
@@ -31,7 +38,7 @@
 ### New Features
 
 * Added further SipStatus states including description and exception details as fields
-* [[OND236-20]](https://ondewo.atlassian.net/browse/OND236-20) - Refactor SIP and provide better API interfaces and
+* [[OND236-20]](https://ondewo.atlassian.net/browse/OND236-20) Refactor SIP and provide better API interfaces and
   documentation
 
 *****************
@@ -40,7 +47,7 @@
 
 ### New Features
 
-* [[OND236-20]](https://ondewo.atlassian.net/browse/OND236-20) - Refactor SIP and provide better API interfaces and
+* [[OND236-20]](https://ondewo.atlassian.net/browse/OND236-20) Refactor SIP and provide better API interfaces and
   documentation
 
 *****************
@@ -49,7 +56,7 @@
 
 ### New Features
 
-* [[OND211-2039]](https://ondewo.atlassian.net/browse/OND211-2039) - Added pre-commit hooks and adjusted files to them
+* [[OND211-2039]](https://ondewo.atlassian.net/browse/OND211-2039) Added pre-commit hooks and adjusted files to them
 
 *****************
 
@@ -57,7 +64,7 @@
 
 ### New Features
 
-* [[OND211-2039]](https://ondewo.atlassian.net/browse/OND211-2039) - Automated release process
+* [[OND211-2039]](https://ondewo.atlassian.net/browse/OND211-2039) Automated release process
 
 *****************
 
