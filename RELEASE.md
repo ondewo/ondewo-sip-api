@@ -1,11 +1,21 @@
 # Release History
+
+*****************
+
+## Release ONDEWO SIP API 5.3.0
+
+### Improvements
+
+* Added async support to SIP API client [[5.2.0]](
+
 *****************
 
 ## Release ONDEWO SIP API 5.2.0
 
 ### Improvements
 
-* Updated SIP clients to ONDEWO Proto Compiler [[5.2.0]](https://github.com/ondewo/ondewo-proto-compiler/releases/tag/5.2.0)
+* Updated SIP clients to ONDEWO Proto
+  Compiler [[5.2.0]](https://github.com/ondewo/ondewo-proto-compiler/releases/tag/5.2.0)
 
 *****************
 
