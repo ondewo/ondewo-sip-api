@@ -88,14 +88,12 @@ build_docs: ## Build documentation locally using the same Docker image as CI/CD
 	@echo "Building Docker image with ONDEWO templates..."
 	@docker build -t ondewo-protoc-gen-doc:local .tmp-protoc-gen-doc-action
 	@echo "Generating documentation..."
-	@mkdir -p googleapis
 	@docker run --rm \
 		--user "$(shell id -u):$(shell id -g)" \
 		-v "$(shell pwd):/workspace" \
 		-w /workspace \
 		ondewo-protoc-gen-doc:local \
 		html,md index
-	@rmdir googleapis 2>/dev/null || true
 	@echo "✓ Documentation generated in docs/ directory"
 	@echo "  Open docs/index.html in your browser to view"
 
