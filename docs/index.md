@@ -64,7 +64,7 @@
 <a name="ondewo.sip.SipRegisterAccountRequest"></a>
 
 ### SipRegisterAccountRequest
-
+<p>Request for registering a SIP account at a SIP server</p>
 
 
 | Field | Type | Label | Description |
@@ -120,7 +120,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | account_name | [string](#string) |  | Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>. Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code> |
-| auto_answer_interval | [int32](#int32) |  | answer interval |
+| auto_answer_interval | [int32](#int32) |  | Auto-answer interval in seconds. The call will be automatically answered after this interval |
 
 
 
@@ -130,7 +130,7 @@
 <a name="ondewo.sip.SipStatus"></a>
 
 ### SipStatus
-
+<p>Status information for a SIP account, session, or call</p>
 
 
 | Field | Type | Label | Description |

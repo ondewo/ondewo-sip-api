@@ -73,6 +73,7 @@ message SipStartCallRequest{
     map<string, string> headers = 2;
 }
 
+// <p>Request for registering a SIP account at a SIP server</p>
 message SipRegisterAccountRequest{
     // Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
     // Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code>
@@ -94,7 +95,7 @@ message SipStartSessionRequest{
     // Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code>
     string account_name = 1;
 
-    // answer interval
+    // Auto-answer interval in seconds. The call will be automatically answered after this interval
     int32 auto_answer_interval = 2;
 }
 
@@ -107,6 +108,7 @@ message SipTransferCallRequest{
     map<string, string> headers = 2;
 }
 
+// <p>Status information for a SIP account, session, or call</p>
 message SipStatus{
     // Account name of the sip user. Usually something like <code>sip-user-1@mydomain.com</code> or <code>sip-user-1@192.168.123.123</code> which uses the default SIP port <code>5060</code>.
     // Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5099</code> to connect to a SIP server running on port <code>5099</code>
