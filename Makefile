@@ -289,3 +289,29 @@ spc: ## Checks if the Release Branch, Tag and Pypi version already exist
 	$(eval filtered_tags:= $(shell git tag --list | grep "${ONDEWO_SIP_API_VERSION}"))
 	@if test "$(filtered_branches)" != ""; then echo "-- Test 1: Branch exists!!" & exit 1; else echo "-- Test 1: Branch is fine";fi
 	@if test "$(filtered_tags)" != ""; then echo "-- Test 2: Tag exists!!" & exit 1; else echo "-- Test 2: Tag is fine";fi
+
+########################################################
+#		UNRELEASE
+
+unrelease: build_utils_docker_image unrelease_to_github_via_docker_image ## Undo a release: delete the GitHub release, release branch, and release tag
+	-git branch -d "release/${ONDEWO_SIP_API_VERSION}"
+	-git tag -d "${ONDEWO_SIP_API_VERSION}"
+	-git fetch --prune
+	@echo "Unrelease of ${ONDEWO_SIP_API_VERSION} complete"
+
+unrelease_to_github_via_docker_image: ## Unrelease from Github via docker
+	docker run --rm \
+		-e GITHUB_GH_TOKEN=${GITHUB_GH_TOKEN} \
+		${IMAGE_UTILS_NAME} make login_to_gh delete_gh_release
+
+delete_gh_release: ## Delete GitHub Release, release branch and release tag via gh CLI
+	-gh release delete --repo $(GH_REPO) "$(ONDEWO_SIP_API_VERSION)" --yes
+	-gh api repos/ondewo/ondewo-sip-api/git/refs/heads/release/${ONDEWO_SIP_API_VERSION} -X DELETE
+	-gh api repos/ondewo/ondewo-sip-api/git/refs/tags/${ONDEWO_SIP_API_VERSION} -X DELETE
+
+ondewo_unrelease: clone_devops_accounts run_unrelease_with_devops ## Unrelease with credentials from devops-accounts repo
+	@rm -rf ${DEVOPS_ACCOUNT_GIT}
+
+run_unrelease_with_devops: ## Gets Credentials from devops-repo and runs unrelease with them
+	$(eval info:= $(shell cat ${DEVOPS_ACCOUNT_DIR}/account_github.env | grep GITHUB_GH))
+	make unrelease $(info)
