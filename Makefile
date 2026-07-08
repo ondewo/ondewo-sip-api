@@ -171,7 +171,7 @@ create_release_tag: ## Create Release Tag and push it to origin
 	git push origin ${ONDEWO_SIP_API_VERSION}
 
 login_to_gh: ## Login to Github CLI with Access Token
-	echo $(GITHUB_GH_TOKEN) | gh auth login -p ssh --with-token
+	@echo $(GITHUB_GH_TOKEN) | gh auth login -p ssh --with-token
 
 build_gh_release: ## Generate Github Release with CLI
 	gh release create --repo $(GH_REPO) "$(ONDEWO_SIP_API_VERSION)" -n "$(CURRENT_RELEASE_NOTES)" -t "Release ${ONDEWO_SIP_API_VERSION}"
@@ -266,7 +266,7 @@ push_to_gh: login_to_gh build_gh_release ## Logs into GitHub CLI and Releases
 	@echo 'Released to Github'
 
 release_to_github_via_docker_image: ## Release to Github via docker
-	docker run --rm \
+	@docker run --rm \
 		-e GITHUB_GH_TOKEN=${GITHUB_GH_TOKEN} \
 		${IMAGE_UTILS_NAME} make push_to_gh
 
@@ -300,7 +300,7 @@ unrelease: build_utils_docker_image unrelease_to_github_via_docker_image ## Undo
 	@echo "Unrelease of ${ONDEWO_SIP_API_VERSION} complete"
 
 unrelease_to_github_via_docker_image: ## Unrelease from Github via docker
-	docker run --rm \
+	@docker run --rm \
 		-e GITHUB_GH_TOKEN=${GITHUB_GH_TOKEN} \
 		${IMAGE_UTILS_NAME} make login_to_gh delete_gh_release
 
