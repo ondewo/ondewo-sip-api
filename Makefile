@@ -208,7 +208,7 @@ release_client:
 # Change Version Number and RELEASE NOTES
 	cd ${REPO_DIR} && perl -i -ne 'print; if(/Release History/){open my $$fh,"<","../temp-notes"; print while <$$fh>; close $$fh}' ${RELEASEMD}
 	cd ${REPO_DIR} && head -20 ${RELEASEMD}
-	cd ${REPO_DIR} && perl -i -pe 's/ONDEWO_SIP_VERSION.*=.*/ONDEWO_SIP_VERSION = ${ONDEWO_SIP_API_VERSION}/' Makefile
+	cd ${REPO_DIR} && perl -i -pe 's/ONDEWO_SIP_VERSION.*=.*/ONDEWO_SIP_VERSION=${ONDEWO_SIP_API_VERSION}/' Makefile
 	cd ${REPO_DIR} && perl -i -pe 's/ONDEWO_PROTO_COMPILER_GIT_BRANCH.*=.*/ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags\/${PROTO_COMPILER}/' Makefile
 	cd ${REPO_DIR} && perl -i -pe 's/SIP_API_GIT_BRANCH.*=.*/SIP_API_GIT_BRANCH=tags\/${ONDEWO_SIP_API_VERSION}/' Makefile && head -30 Makefile
 
