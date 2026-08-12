@@ -2,6 +2,14 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.4.0
+
+### Improvements
+
+* [[OND211-2418]](https://ondewo.atlassian.net/browse/OND211-2418) Added Jenkins multibranch-scan guidance in CLAUDE.md and fixed pre-commit hook order for conventional commit validation
+
+*****************
+
 ## Release ONDEWO SIP API 5.3.0
 
 ### Improvements
