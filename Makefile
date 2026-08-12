@@ -228,7 +228,10 @@ release_client:
 	bash -c 'set -o pipefail; make -C ${REPO_DIR} ondewo_release | tee build_log_${REPO_NAME}.txt'
 	make -C ${REPO_DIR} TEST
 # Remove everything from Release
-	rm -rf ${REPO_DIR}
+# Same sudo fallback as the clone step above: the proto-compiler docker run leaves
+# root-owned files behind, and a bare rm -rf failing here would report a fully
+# successful release as FAILED.
+	rm -rf ${REPO_DIR} || sudo rm -rf ${REPO_DIR}
 	rm -f temp-notes-${REPO_NAME}
 
 PYTHON_CLIENT="git@github.com:ondewo/ondewo-sip-client-python.git"
