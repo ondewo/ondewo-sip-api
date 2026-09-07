@@ -198,9 +198,14 @@ release_all_clients: ## Release all clients IN PARALLEL; one failing client does
 
 GENERIC_CLIENT?=
 RELEASEMD?=
-GENERIC_RELEASE_NOTES="\n***************** \n\\\#\\\# Release ONDEWO SIP REPONAME Client ${ONDEWO_SIP_API_VERSION} \n \
-	\n\\\#\\\#\\\# Improvements \n \
-	* Tracking API Version [${ONDEWO_SIP_API_VERSION}](https://github.com/ondewo/ondewo-sip-api/releases/tag/${ONDEWO_SIP_API_VERSION}) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) \n"
+# Emitted markdownlint-clean, and deliberately on ONE line. Every ` \n` used to leave a trailing space
+# on each generated line and a leading space on the list item, and make's line-continuation collapses
+# `\<newline><tab>` to a further space, so the block tripped MD009/MD007/MD022/MD012/MD032 in EVERY client and the
+# first pre-commit run of every release `Failed - files were modified by this hook`. It self-healed on
+# the re-run, but it also left the emitted heading as `## Release ... <VERSION> ` WITH a trailing space,
+# which no `$$`-anchored grep can match. Keep this byte-identical to what markdownlint normalises to:
+# no trailing spaces, a blank line around the heading and around the list.
+GENERIC_RELEASE_NOTES=\n*****************\n\n\\\#\\\# Release ONDEWO SIP REPONAME Client ${ONDEWO_SIP_API_VERSION}\n\n\\\#\\\#\\\# Improvements\n\n* Tracking API Version [${ONDEWO_SIP_API_VERSION}](https://github.com/ondewo/ondewo-sip-api/releases/tag/${ONDEWO_SIP_API_VERSION}) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) )\n
 
 release_client:
 	$(eval REPO_NAME:= $(shell echo ${GENERIC_CLIENT} | cut -c 41- | cut -d '.' -f 1))
@@ -212,7 +217,12 @@ release_client:
 	rm -rf ${REPO_DIR} || sudo rm -rf ${REPO_DIR}
 	rm -f build_log_${REPO_NAME}.txt
 
-	@echo ${GENERIC_RELEASE_NOTES} > temp-notes-${REPO_NAME} && perl -i -pe 's/\\//g' temp-notes-${REPO_NAME} && perl -i -pe 's/REPONAME/${UPPER_REPO_NAME}/g' temp-notes-${REPO_NAME}
+	@# printf '%b', not echo: echo appends a newline of its own on top of the trailing \n, which left a
+	@# doubled blank line before the previous entry's separator (markdownlint MD012 used to eat it).
+	@# Read it through the environment (line 1 is a bare `export`) instead of interpolating it into the
+	@# command text: interpolated, the value has to carry its own quotes so the shell does not glob the
+	@# bare `*****`, and anything a backtick or a `$$` reaches inside those quotes is run as a command.
+	@printf '%b' "$$GENERIC_RELEASE_NOTES" > temp-notes-${REPO_NAME} && perl -i -pe 's/\\//g' temp-notes-${REPO_NAME} && perl -i -pe 's/REPONAME/${UPPER_REPO_NAME}/g' temp-notes-${REPO_NAME}
 	git clone ${GENERIC_CLIENT}
 # Check if Client is already uptodate with API Version
 	@! git -C ${REPO_DIR} branch -a | grep -q ${ONDEWO_SIP_API_VERSION} || (echo "Already Released ${ONDEWO_SIP_API_VERSION} \n\n\n"  && touch .already_released_marker-${REPO_NAME} && rm -rf ${REPO_DIR} && rm -f temp-notes-${REPO_NAME} && exit 1)
