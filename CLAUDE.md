@@ -161,6 +161,73 @@ Pre-commit here uses only the language-agnostic hooks — **markdownlint-cli2, p
 - **markdownlint MD053 is disabled** (its auto-fix deletes `[comment]: <>` reference-definition markers).
 - **markdownlint RELEASE.md reformatting is content-safe**: it only strips trailing whitespace and adds blank lines around headings — the `## Release … <VERSION>` headings and `*****` separators that `ondewo_release` greps for remain intact. (Confirmed: the 6.5.0 release notes sliced correctly after the reformat.)
 
+## GitHub Actions — `Generate API Documentation` is a required gate
+
+`.github/workflows/generate-doc-and-deploy.yaml` is the repository's **only** workflow and it is a blocking check,
+not advisory: it runs on every push to `master`, on every pull request whose **base** is `master`, and on
+`workflow_dispatch`. One job, `generate-doc-and-deploy`, with three declared steps — none of them a `run:` script,
+all three `uses:` — plus the implicit image build GitHub inserts for the docker action:
+
+1. `actions/checkout@v5` with `submodules: true`.
+2. `ondewo/ondewo-protoc-gen-doc-action@master` — a **docker** action. GitHub first builds its `Dockerfile`
+   (`FROM pseudomuto/protoc-gen-doc`) as its own step, then runs `entrypoint.sh` with the action's default inputs
+   `formats=html,md` and `filename=index`. The entrypoint copies `resources/html/style.css` into `docs/` and runs
+   `protoc -I. -Igoogleapis --doc_opt=/resources/templates/<fmt>.tmpl,index.<fmt> --doc_out=docs` over
+   `$(find ondewo -name '*.proto' | sort)`, once per format.
+3. `JamesIves/github-pages-deploy-action@v4`, which commits the regenerated `docs/` back to `master`'s `docs/`
+   folder. It is skipped under `act` (`if: ${{ !env.ACT }}`) and **cannot be reproduced locally** — it needs the
+   runner's `GITHUB_TOKEN` and push rights. Do not try; the other two steps are the whole gate.
+
+**Reproduce steps 1–2 locally with the repository's own target.** It clones the same action at the same ref and
+builds the same image, so it is the CI command rather than an approximation — do not hand-roll a `protoc` invocation
+against a locally installed compiler, which would use a different protoc version and different templates:
+
+```bash
+make build_docs          # clone ondewo-protoc-gen-doc-action@master, docker build, docker run "html,md" "index"
+make clean_docs_builder  # ALWAYS finish with this; see the untracked-clone note below
+```
+
+What is sharp about it, all of it observed while running the above:
+
+- **The gate is "protoc succeeds", NOT "`docs/` is up to date".** `entrypoint.sh` only writes files; nothing
+  compares the generated output against what is committed. A proto edit whose `docs/` was never regenerated passes
+  the workflow, and step 3 then regenerates and commits it on `master`. So a green run is **not** evidence that the
+  committed `docs/` matches the protos — regenerate and diff if you need to know that.
+- **What does turn the step red is an unresolvable import.** `-Igoogleapis` names a directory this repo does not
+  contain, so every run prints `googleapis: warning: directory does not exist.` once per format. That is harmless
+  only because `ondewo/sip/sip.proto` imports nothing beyond `google/protobuf/empty.proto` and
+  `google/protobuf/timestamp.proto`, which protoc resolves from its own bundled include. Verified by adding a
+  scratch proto that imports `google/api/annotations.proto`: the same container exits **1** with
+  `google/api/annotations.proto: File not found.`. If a proto ever needs googleapis, the workflow has to vendor or
+  check it out — the existing warning is not a spare tyre.
+- **The action is pinned to `@master`, a moving ref**, and it publishes no tag to pin to instead. A green run is
+  evidence about the action as it was that day, not a standing guarantee. `make build_docs` clones `--depth 1`
+  master as well, which is exactly what makes it a faithful reproduction.
+- **`make build_docs` leaves `.tmp-protoc-gen-doc-action/` behind and that path is NOT in `.gitignore`** — one
+  careless `git add .` vendors a whole clone of the action into this repo. `make clean_docs_builder` removes it
+  together with the local image.
+- **`submodules: true` is a no-op** — there is no `.gitmodules`. Do not add a proto dependency expecting checkout to
+  fetch it for you.
+- **There is no uv / ruff / mypy / pytest / coverage step to reproduce.** This repository tracks zero `.py` files;
+  the `flake8` and `mypy` Makefile targets download their configs from `ondewo-sip-client-python` and would lint
+  nothing here, and no workflow calls them. Hunting for a `--cov-fail-under` or a `[tool.coverage.run] source` list
+  in this repo is a dead end — the protos and the generated docs are the whole surface.
+- The single deliberate divergence in `make build_docs` is `--user $(id -u):$(id -g)`, so the regenerated files
+  belong to you rather than to root. Container, arguments and generated bytes are otherwise identical to CI.
+
+**Read the real verdict instead of guessing** (there is no `gh` CLI on these machines):
+
+```bash
+SHA=$(git rev-parse HEAD)
+curl -s "https://api.github.com/repos/ondewo/ondewo-sip-api/actions/runs?head_sha=$SHA" \
+  | python3 -c 'import json,sys
+for r in json.load(sys.stdin)["workflow_runs"]:
+    print(r["path"], r["status"], r["conclusion"])'
+```
+
+A commit on a feature branch with no open PR into `master` has **no run at all** — an empty `workflow_runs` list
+means "never triggered", which is not the same as a failure.
+
 ## Jenkins — never trigger a multibranch scan or branch indexing
 
 **NEVER trigger a Jenkins multibranch scan or branch indexing.** Do not call a multibranch/folder job's
@@ -171,3 +238,141 @@ Pre-commit here uses only the language-agnostic hooks — **markdownlint-cli2, p
 If a branch is not building — it was not discovered, or its job is marked `buildable: false` / orphaned —
 **report it and stop**. Let the user or a Jenkins admin adjust branch-discovery/config or rename the branch
 to the convention. Never force a build by scanning or reindexing.
+
+## Releasing: preflight and the traps that have actually bitten
+
+Written after a release program across every ONDEWO client in one session. Each item below
+cost real time or a broken artefact; every statement is derived from THIS repo's Makefile.
+
+### Before you touch the version, check the released tag is in `master`
+
+Releases here are cut from a `release/<version>` branch and are **not always merged back**, so
+`master` can be missing work that is already published — and because a later version number
+sorts above the unmerged one, a consumer upgrading silently loses it. The ondewo-nlu-client-python
+7.1.0 release was exactly this: it shipped from a `master` that had never seen 7.0.5's
+offline-token hand-off, so PyPI's newest release was a regression against its predecessor.
+
+```bash
+latest=$(git tag --sort=-v:refname | head -1)
+git merge-base --is-ancestor "$latest" master && echo "in master" || echo "NOT in master -- merge first"
+```
+
+A fast-forward (`git merge --ff-only <tag>`) is the common case. A true merge needs care: resolve
+metadata toward `master` and keep BOTH release-note sections, newest first — a reader upgrading
+from the older line still needs the older entry.
+
+### The release notes are sliced by an EXACTLY-CASED heading
+
+`CURRENT_RELEASE_NOTES` slices `RELEASE.md` with a perl range. In THIS repo the opening
+pattern is, verbatim:
+
+```text
+Release ONDEWO SIP API ${ONDEWO_SIP_API_VERSION}
+```
+
+So the heading of a new entry must read exactly `## Release ONDEWO SIP API <version>`. **This wording is
+not consistent across the ONDEWO repos** — some say `... <Name> Client`, some `... Client
+<Name>` with the words reversed, the API repos say `... API` with no `Client` at all, and the
+casing varies (`Js`, `Nodejs`, `Typescript`, `Survey`). Do not carry a heading over from a
+sibling repo. Copy the PREVIOUS entry in this file and change only the version, or read the
+pattern above out of the Makefile.
+
+A heading that does not match yields an **empty slice**, and the GitHub release is then
+created with empty notes or fails outright. Verify before releasing:
+
+```bash
+grep -c '^## Release ONDEWO SIP API ' RELEASE.md     # must be >= 1 for your new version
+```
+
+### Where the release notes live
+
+This repo does NOT regenerate the root `RELEASE.md` from `src/`, so the root file is the one
+the release reads. Keep `src/RELEASE.md` in step by hand if it exists.
+
+### Publish order decides how a partial failure is recovered
+
+`make release` in this repo runs:
+
+The **npm publish happens LAST**. So a failure before it means nothing shipped, but the
+branch, tag and GitHub release may already exist — and `spc` will then refuse a re-run. Recover
+by running only the remaining step, not the whole target.
+
+### Verify against the registry, with the REAL package name
+
+This package publishes as **`<see package.json name>`**, which is not always the repository name — the JS client
+publishes as `@ondewo/ondewo-nlu-client-js` (doubled `ondewo`), so a lookup by repo name returns
+a 404 that reads like a failed release. Check the name in the manifest first, then:
+
+```bash
+npm view <see package.json name> versions --json
+```
+
+**An npm publish can be STAGED but not yet served.** Immediately after a publish the registry may
+answer 404 for the new version while refusing a re-publish with
+`409 Cannot publish over previously staged version`. That is not a failure and the version is
+not burned — wait and re-check before bumping to a new number.
+
+### The release prints credentials — read the log BEFORE you scrub it
+
+`make ondewo_release` clones `ondewo-devops-accounts` and passes the registry and GitHub tokens on
+the make command line, so they are echoed into the console and into any transcript capturing it.
+This is a known and accepted property of the shared release path: do **not** re-plumb the recipe.
+Redirect the run to a file, read it through a filter, and shred the file afterwards — and read it
+**before** shredding, or a genuine failure is lost with the secrets:
+
+```bash
+umask 077; make ondewo_release > /tmp/rel.log 2>&1; echo "RC=$?"
+grep -avE 'TOKEN|PASSWORD|USERNAME|_authToken' /tmp/rel.log | tail -20   # read FIRST
+shred -u /tmp/rel.log; rm -rf ondewo-devops-accounts                     # then scrub
+```
+
+### Run the release from `master`, and check with `git branch --show-current`
+
+A release ends by checking out `release/<version>`, and **nothing checks you out back**. Start the
+next release from that leftover checkout and `git commit` + `git push` land on the OLD release
+branch: the new `release/<version>` is cut from it, the tag points into it, and `master` never sees
+the release at all. Measured on ondewo-csi-client-typescript 5.5.1 -- npm had it, the tag had it,
+and `origin/master` was still at 5.5.0. Recovery was a fast-forward (`git merge --ff-only
+release/5.5.1`), which worked only because nothing else had moved; a diverged `master` needs a real
+merge.
+
+```bash
+git branch --show-current            # must print master BEFORE `make ondewo_release`
+```
+
+### The release `git add` list is an ALLOW-LIST, so anything outside it ships but is never committed
+
+`make build` writes files the release target then stages from a fixed list of paths. Anything the
+build touches that is not on that list reaches the registry and is **absent from the tag of that
+same version** -- two different things under one name, with nothing anywhere reporting it.
+
+Both directions have bitten: a hand-written directory the build copies into the package, and a
+tracked file the build regenerates. Whatever `make build` writes, either stage it or prove the
+release does not need it.
+
+The general check costs nothing:
+
+```bash
+git status --porcelain    # MUST be empty after a release; anything left is published-but-uncommitted
+```
+
+### Write the RELEASE.md section BEFORE releasing, or the release body is silently empty
+
+`CURRENT_RELEASE_NOTES` slices RELEASE.md between the heading naming this exact version and the next
+`*****` separator. No heading means an EMPTY slice, `gh release create -n ""` succeeds, and you get a
+release with no notes and no error anywhere. ondewo-nlu-client-js and -typescript 7.1.1 shipped that
+way and had to be repaired after the fact.
+
+```bash
+cat RELEASE.md | perl -ne 'print if /<the exact heading> <version>/../^\*{5}/' | wc -l   # must be > 0
+```
+
+### Verify the three artefacts separately -- they fail independently
+
+GitHub's release API returned 500 twice in one session, leaving the registry and the tag correct and
+**no release object at all** (nlu-client-js and -angular 7.1.1); `gh release create` after the fact
+repairs it without touching the artefact.
+
+```bash
+git tag --list <version> ; gh release view <version> --json body --jq '.body|length'
+```
