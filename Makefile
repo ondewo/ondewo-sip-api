@@ -21,8 +21,13 @@ ONDEWO_SIP_API_VERSION=5.5.0
 # You need to setup an access token at https://github.com/settings/tokens - permissions are important
 GITHUB_GH_TOKEN?=ENTER_YOUR_TOKEN_HERE
 
+# Terminate on the ***** separator that actually delimits release entries, NOT on /\*\*/ - that matched the
+# first inline markdown **bold** span INSIDE the entry and silently truncated the notes there, with no error
+# from `gh release create -n "$(CURRENT_RELEASE_NOTES)"`. Measured on a scratch copy of this RELEASE.md with
+# one bold bullet added to the 5.4.0 entry: old pattern 5 lines, new pattern 8. Safe because every separator
+# in RELEASE.md is a run of exactly 17 asterisks (12 of them), so /^\*{5}/ can only match a separator.
 CURRENT_RELEASE_NOTES=`cat RELEASE.md \
-	| perl -ne 'print if /Release ONDEWO SIP API ${ONDEWO_SIP_API_VERSION}/../\*\*/'`
+	| perl -ne 'print if /Release ONDEWO SIP API ${ONDEWO_SIP_API_VERSION}/../^\*{5}/'`
 
 GH_REPO="https://github.com/ondewo/ondewo-sip-api"
 DEVOPS_ACCOUNT_GIT="ondewo-devops-accounts"
@@ -198,9 +203,14 @@ release_all_clients: ## Release all clients IN PARALLEL; one failing client does
 
 GENERIC_CLIENT?=
 RELEASEMD?=
-GENERIC_RELEASE_NOTES="\n***************** \n\\\#\\\# Release ONDEWO SIP REPONAME Client ${ONDEWO_SIP_API_VERSION} \n \
-	\n\\\#\\\#\\\# Improvements \n \
-	* Tracking API Version [${ONDEWO_SIP_API_VERSION}](https://github.com/ondewo/ondewo-sip-api/releases/tag/${ONDEWO_SIP_API_VERSION}) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) \n"
+# Emitted markdownlint-clean, and deliberately on ONE line. Every ` \n` used to leave a trailing space
+# on each generated line and a leading space on the list item, and make's line-continuation collapses
+# `\<newline><tab>` to a further space, so the block tripped MD009/MD007/MD022/MD012/MD032 in EVERY client and the
+# first pre-commit run of every release `Failed - files were modified by this hook`. It self-healed on
+# the re-run, but it also left the emitted heading as `## Release ... <VERSION> ` WITH a trailing space,
+# which no `$$`-anchored grep can match. Keep this byte-identical to what markdownlint normalises to:
+# no trailing spaces, a blank line around the heading and around the list.
+GENERIC_RELEASE_NOTES=\n*****************\n\n\\\#\\\# Release ONDEWO SIP REPONAME Client ${ONDEWO_SIP_API_VERSION}\n\n\\\#\\\#\\\# Improvements\n\n* Tracking API Version [${ONDEWO_SIP_API_VERSION}](https://github.com/ondewo/ondewo-sip-api/releases/tag/${ONDEWO_SIP_API_VERSION}) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) )\n
 
 release_client:
 	$(eval REPO_NAME:= $(shell echo ${GENERIC_CLIENT} | cut -c 41- | cut -d '.' -f 1))
@@ -212,13 +222,33 @@ release_client:
 	rm -rf ${REPO_DIR} || sudo rm -rf ${REPO_DIR}
 	rm -f build_log_${REPO_NAME}.txt
 
-	@echo ${GENERIC_RELEASE_NOTES} > temp-notes-${REPO_NAME} && perl -i -pe 's/\\//g' temp-notes-${REPO_NAME} && perl -i -pe 's/REPONAME/${UPPER_REPO_NAME}/g' temp-notes-${REPO_NAME}
+	@# printf '%b', not echo: echo appends a newline of its own on top of the trailing \n, which left a
+	@# doubled blank line before the previous entry's separator (markdownlint MD012 used to eat it).
+	@# Read it through the environment (line 1 is a bare `export`) instead of interpolating it into the
+	@# command text: interpolated, the value has to carry its own quotes so the shell does not glob the
+	@# bare `*****`, and anything a backtick or a `$$` reaches inside those quotes is run as a command.
+	@# The final perl normalises the file to exactly ONE trailing newline: printf '%b' adds none of its
+	@# own, so a GENERIC_RELEASE_NOTES that does not end in \n would leave the file without a final
+	@# newline, and the insert below would then swallow the blank line before the next ***** separator -
+	@# markdownlint MD032, which the client's own pre-commit auto-fixes and so reports as
+	@# `Failed - files were modified by this hook` on the first run of the release.
+	@printf '%b' "$$GENERIC_RELEASE_NOTES" > temp-notes-${REPO_NAME} && perl -i -pe 's/\\//g' temp-notes-${REPO_NAME} && perl -i -pe 's/REPONAME/${UPPER_REPO_NAME}/g' temp-notes-${REPO_NAME} && perl -0777 -i -pe 's/\n*\z/\n/' temp-notes-${REPO_NAME}
 	git clone ${GENERIC_CLIENT}
 # Check if Client is already uptodate with API Version
 	@! git -C ${REPO_DIR} branch -a | grep -q ${ONDEWO_SIP_API_VERSION} || (echo "Already Released ${ONDEWO_SIP_API_VERSION} \n\n\n"  && touch .already_released_marker-${REPO_NAME} && rm -rf ${REPO_DIR} && rm -f temp-notes-${REPO_NAME} && exit 1)
 
 # Change Version Number and RELEASE NOTES
-	cd ${REPO_DIR} && perl -i -ne 'print; if(/Release History/){open my $$fh,"<","../temp-notes-${REPO_NAME}"; print while <$$fh>; close $$fh}' ${RELEASEMD}
+# Only insert the generated boilerplate when the client does not already document this version. A client
+# whose RELEASE.md was curated by hand ahead of the release would otherwise get a SECOND
+# "Release ONDEWO SIP <Name> Client <VERSION>" heading, which buries the curated entry (the notes slice
+# takes the FIRST match) and trips the client's own markdownlint MD024 - which does not auto-fix, so the
+# client's pre-commit fails and the release aborts. ondewo-nlu-client-angular src/RELEASE.md carries two
+# byte-identical "## Release ONDEWO NLU Angular Client 3.5.0" blocks (lines 257 and 266) from exactly this.
+	cd ${REPO_DIR} && if grep -qE "^#+ Release ONDEWO SIP ${UPPER_REPO_NAME} Client ${ONDEWO_SIP_API_VERSION}$$" ${RELEASEMD}; then \
+		echo "${RELEASEMD} already documents ${ONDEWO_SIP_API_VERSION} - keeping the curated entry, not inserting the generated notes"; \
+	else \
+		perl -i -ne 'print; if(/Release History/){open my $$fh,"<","../temp-notes-${REPO_NAME}"; print while <$$fh>; close $$fh}' ${RELEASEMD}; \
+	fi
 	cd ${REPO_DIR} && head -20 ${RELEASEMD}
 	cd ${REPO_DIR} && perl -i -pe 's/ONDEWO_SIP_VERSION.*=.*/ONDEWO_SIP_VERSION=${ONDEWO_SIP_API_VERSION}/' Makefile
 	cd ${REPO_DIR} && perl -i -pe 's/ONDEWO_PROTO_COMPILER_GIT_BRANCH.*=.*/ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags\/${PROTO_COMPILER}/' Makefile
@@ -228,7 +258,10 @@ release_client:
 	bash -c 'set -o pipefail; make -C ${REPO_DIR} ondewo_release | tee build_log_${REPO_NAME}.txt'
 	make -C ${REPO_DIR} TEST
 # Remove everything from Release
-	rm -rf ${REPO_DIR}
+# Same sudo fallback as the clone step above: the proto-compiler docker run leaves
+# root-owned files behind, and a bare rm -rf failing here would report a fully
+# successful release as FAILED.
+	rm -rf ${REPO_DIR} || sudo rm -rf ${REPO_DIR}
 	rm -f temp-notes-${REPO_NAME}
 
 PYTHON_CLIENT="git@github.com:ondewo/ondewo-sip-client-python.git"
