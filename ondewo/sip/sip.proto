@@ -39,8 +39,8 @@ service Sip {
 
     // <p>Ends a call in an active SIP session for an account registered at a SIP server</p>
     rpc SipEndCall (SipEndCallRequest) returns (SipStatus) {
-        // Not idempotent (no idempotency_level): a repeat without a call assigns NO_ONGOING_CALL over the terminal
-        // status, appends to the history and ends a one-shot caller container; unscoped it can end the next call.
+        // Not idempotent (no idempotency_level): a repeat without a call appends its refusal to the history and ends
+        // a one-shot caller container; unscoped it can end the next call.
     };
 
     // <p>Transfers a call in an active SIP session for an account registered at a SIP server to another SIP account or phone number specified by <code>transfer_id</code></p>
