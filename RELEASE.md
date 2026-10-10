@@ -16,6 +16,7 @@
 ### Improvements
 
 * Documented that Asterisk does not forward the headers of a REFER to the transfer target.
+* [[OND211-2443]](https://ondewo.atlassian.net/browse/OND211-2443) `SipGetSipStatus` and `SipGetSipStatusHistory` declare `option idempotency_level = NO_SIDE_EFFECTS` (they serve copies of the status taken under its lock), so clients built on ondewo-client-utils retry them on transient errors without a name-based allowlist. Every other `Sip` RPC is left unmarked on purpose; the reason is noted on each RPC.
 * Purely additive: no field, enum value or RPC was renumbered or removed, and no `SipStatus.StatusType` value was added beyond the answering machine status, so a client built against 5.4.0 stays wire-compatible.
 
 *****************
