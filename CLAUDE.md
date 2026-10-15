@@ -185,6 +185,10 @@ runs it against fake client repositories. Invariants, each of which a past run v
   the typescript client gets the transitive google-dependency fix. Python was on 5.15.3; nothing for
   python changed after it.
 - The client make's output is piped through `tee` under `set -o pipefail`; a plain pipe returns tee's 0.
+- **The client clone and the client make run under umask 022**, not the driver's private 077. A client builds
+  docker images from its checkout and runs them with `--user $(id -u)`; COPY keeps file modes, so a 0600
+  checkout left the php proto-compiler entrypoint unreadable (`compile-proto-2-php.sh: Permission denied`,
+  first 5.5.2 run). Only the notes, the devops copy and the logs stay 077.
 
 ## Pre-commit upgraded (language-agnostic hook set)
 
