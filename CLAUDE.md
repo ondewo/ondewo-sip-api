@@ -151,8 +151,40 @@ Raises:
 
 ## Client-release orchestration (`release_all_clients`)
 
-- It **fails loudly** on a genuine client-release error: the piped sub-make runs under `bash -c 'set -o pipefail; make -C … | tee …'` (a plain sh pipe returns tee's 0 and masks failures), and a **marker file** distinguishes an "already released" SKIP from a real FAILURE (make flattens recipe exit codes to 2, so the code alone can't tell them apart). Do not regress either.
-- Every token-bearing recipe line is `@`-prefixed so make never echoes a secret — `docker run -e <TOKEN>`, `echo $(TOKEN) | gh auth`, `twine … -p${PYPI_PASSWORD}`, and the credential sub-make `make release $(info)` (which expands the token at runtime and is easy to miss).
+The flow is described in README "Automatic Release Process - Clients"; the logic lives in
+`scripts/release_client.sh` and `scripts/with_devops_accounts.sh`, and `scripts/test_release_driver.py`
+runs it against fake client repositories. Invariants, each of which a past run violated:
+
+- **All eleven SDKs are in `CLIENTS`.** Only five (python nodejs typescript angular js) used to be, so
+  cpp, csharp, go, java, php and rust were never released from here. Their RELEASE.md headings spell the
+  language as the capitalised name except `C++` and `PHP` (`CLIENT_DISPLAY_NAME_<x>`).
+- **SKIP means "tag on origin AND `release_verify` passes".** It used to be "some branch name contains the
+  version" (`branch -a | grep`, unanchored), so a client that failed after pushing `release/<version>` was
+  reported as done on the re-run, and `release/15.5.0` made 5.5.0 a SKIP. A branch without a tag, or a tag
+  whose `release_verify` fails, is FAILED. The marker file still separates SKIP from RELEASED (make flattens
+  exit codes to 2); a marker only counts when the client exited 0.
+- **`preflight_all_clients` is a prerequisite** of the parallel release (`.NOTPARALLEL:` keeps the order
+  under `-j`): one failing preflight stops the run before anything is released.
+- **A client without `release_preflight` / `release_verify` FAILS** with "client <x> lacks …"; never skip it.
+- **One devops-accounts clone per run**, in `mktemp -d`, never in a checkout, removed by an EXIT trap; each
+  client gets a private copy as an ABSOLUTE path (clients run as `make -C <client>`, where a relative
+  `./ondewo-devops-accounts` resolves to nothing and the client silently clones its own; a client deleting
+  "its" clone cannot break a parallel one). The wrapper lines call `make`, not `$(MAKE)`: make executes
+  `$(MAKE)` lines under `-n`, so a dry run cloned the credentials.
+- **Cleanup on every exit path, no sudo**: the client clone and the private temp dir go in the script's
+  EXIT trap; root-owned files go through a digest-pinned busybox container.
+- **No bare `export`**, and the client make starts without `MAKEFLAGS` and without every variable named in
+  it: make exports command-line variables (`CLIENT=…`) to children, and a client's `?=` would take them.
+- **Version rewrites are anchored** on the assignment at the start of a line (`^ONDEWO_SIP_VERSION\s*=`,
+  `^(ONDEWO_)?SIP_API_GIT_BRANCH\s*=`). Unanchored, they also rewrote lines that merely mention the
+  variable (the go client's go.mod check echoes `ONDEWO_SIP_VERSION=${ONDEWO_SIP_VERSION}`, a csharp
+  comment shows `make build ONDEWO_SIP_VERSION=1.2.3`).
+- **The proto compiler is pinned** (`ONDEWO_PROTO_COMPILER_VERSION`, 5.15.7), not "the first tag the API
+  returns". 5.15.7 is the newest tag and a superset of 5.15.5, which nine SDKs were on; angular needs it
+  (it omits the client-streaming and bidi RPCs angular cannot generate, which `SipStreamCallAudio` is) and
+  the typescript client gets the transitive google-dependency fix. Python was on 5.15.3; nothing for
+  python changed after it.
+- The client make's output is piped through `tee` under `set -o pipefail`; a plain pipe returns tee's 0.
 
 ## Pre-commit upgraded (language-agnostic hook set)
 
@@ -264,10 +296,10 @@ from the older line still needs the older entry.
 ### The release notes are sliced by an EXACTLY-CASED heading
 
 `CURRENT_RELEASE_NOTES` slices `RELEASE.md` with a perl range. In THIS repo the opening
-pattern is, verbatim:
+pattern is, verbatim (anchored, the version quoted so `5.5.1` does not open on `5.5.10`):
 
 ```text
-Release ONDEWO SIP API ${ONDEWO_SIP_API_VERSION}
+^#+ Release ONDEWO SIP API \Q${ONDEWO_SIP_API_VERSION}\E$
 ```
 
 So the heading of a new entry must read exactly `## Release ONDEWO SIP API <version>`. **This wording is
@@ -291,11 +323,10 @@ the release reads. Keep `src/RELEASE.md` in step by hand if it exists.
 
 ### Publish order decides how a partial failure is recovered
 
-`make release` in this repo runs:
-
-The **npm publish happens LAST**. So a failure before it means nothing shipped, but the
-branch, tag and GitHub release may already exist — and `spc` will then refuse a re-run. Recover
-by running only the remaining step, not the whole target.
+`make release` in this repo runs `create_release_branch`, `create_release_tag`, then
+`build_and_release_to_github_via_docker`. A failure after the branch was pushed leaves the branch (and
+maybe the tag) on origin, and `spc` will then refuse a re-run. Recover by running only the remaining
+step, not the whole target.
 
 ### Verify against the registry, with the REAL package name
 
@@ -312,19 +343,15 @@ answer 404 for the new version while refusing a re-publish with
 `409 Cannot publish over previously staged version`. That is not a failure and the version is
 not burned — wait and re-check before bumping to a new number.
 
-### The release prints credentials — read the log BEFORE you scrub it
+### The release keeps credentials off argv and out of the checkout
 
-`make ondewo_release` clones `ondewo-devops-accounts` and passes the registry and GitHub tokens on
-the make command line, so they are echoed into the console and into any transcript capturing it.
-This is a known and accepted property of the shared release path: do **not** re-plumb the recipe.
-Redirect the run to a file, read it through a filter, and shred the file afterwards — and read it
-**before** shredding, or a genuine failure is lost with the secrets:
-
-```bash
-umask 077; make ondewo_release > /tmp/rel.log 2>&1; echo "RC=$?"
-grep -avE 'TOKEN|PASSWORD|USERNAME|_authToken' /tmp/rel.log | tail -20   # read FIRST
-shred -u /tmp/rel.log; rm -rf ondewo-devops-accounts                     # then scrub
-```
+`make ondewo_release` no longer clones `ondewo-devops-accounts` into the checkout or passes the token
+on a command line: `scripts/with_devops_accounts.sh --github-token` clones it into a private
+`mktemp -d`, loads `GITHUB_GH_TOKEN` into the release sub-make's environment and deletes the clone
+before the release runs. `scripts/check_release_credentials_hygiene.py` fails on a token that reaches a
+recipe's command line. A client release may still print its own registry credentials until that client
+follows the release contract, so keep capturing release logs with `umask 077` and read them before you
+delete them.
 
 ### Run the release from `master`, and check with `git branch --show-current`
 
@@ -356,12 +383,13 @@ The general check costs nothing:
 git status --porcelain    # MUST be empty after a release; anything left is published-but-uncommitted
 ```
 
-### Write the RELEASE.md section BEFORE releasing, or the release body is silently empty
+### Write the RELEASE.md section BEFORE releasing, or the release stops
 
 `CURRENT_RELEASE_NOTES` slices RELEASE.md between the heading naming this exact version and the next
-`*****` separator. No heading means an EMPTY slice, `gh release create -n ""` succeeds, and you get a
-release with no notes and no error anywhere. ondewo-nlu-client-js and -typescript 7.1.1 shipped that
-way and had to be repaired after the fact.
+`*****` separator. No heading means an EMPTY slice, and `gh release create -n ""` succeeds with no notes
+and no error anywhere; ondewo-nlu-client-js and -typescript 7.1.1 shipped that way and had to be
+repaired after the fact. Here `spc` (Test 3) refuses a section without content before any branch is cut,
+and `build_gh_release` refuses empty notes again.
 
 ```bash
 cat RELEASE.md | perl -ne 'print if /<the exact heading> <version>/../^\*{5}/' | wc -l   # must be > 0
