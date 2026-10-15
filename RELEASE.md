@@ -2,6 +2,30 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.5.2
+
+### Improvements
+
+* No API change: the protos are identical to 5.5.0, so every client built against 5.5.0 stays wire-compatible. 5.5.1 was an angular-only client release and is skipped here so that the API and all eleven SDKs share one version again.
+* All eleven `ondewo-sip-client-<language>` SDKs (python, nodejs, typescript, angular, js, cpp, csharp, go, java, php, rust) are released from this repository. `make release_all_clients` runs every client's read-only `release_preflight` first and releases nothing if one fails, then releases them in parallel; a client counts as released only when its `release_verify` confirms the tag, a non-empty GitHub release and the registry serving the version.
+* The release driver clones ondewo-devops-accounts once per run into a private temporary directory and deletes it on every exit path, pins the proto compiler (5.15.7) instead of taking the newest tag, rewrites only anchored version assignments, and reports a half-finished client release as FAILED instead of SKIP.
+* Release credentials are passed through the environment, never on a command line.
+* The documentation deploy checks out the pushed commit detached, so it no longer logs git errors.
+
+### SDK fixes released with 5.5.2
+
+* Every SDK implements the same release contract: a read-only preflight (credentials, version new on origin and on the registry, release notes present, host tools), the test suite as a gate before anything is committed, publish to the registry before anything is pushed to origin, and a read-only verification afterwards.
+* API-surface tests in every SDK are derived from the pinned protos or the generated descriptors instead of hand-written RPC lists, so a new API release moves them with it.
+* nodejs: the npm package no longer ships the auth TypeScript sources or `*.spec.ts` files, so a consumer's strict `tsc` no longer type-checks them.
+* nodejs, typescript, js: eslint 10; a build no longer silently downgrades eslint by re-resolving dev dependencies.
+* angular: prettier no longer reformats the generated `index.d.ts` and `public-api.ts`, so the committed typings stay byte-identical to the published ones; a dry run of the release clones and reads nothing.
+* cpp: a single uploader for the release asset, verified by sha256, and pinned gh and toolchain images.
+* csharp: nuget.org is verified to serve the package before anything is pushed.
+* go: the module is served by the Go proxy before the GitHub release is created.
+* rust: the release waits for crates.io to serve the crate.
+
+*****************
+
 ## Release ONDEWO SIP API 5.5.0
 
 ### New Features
