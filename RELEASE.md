@@ -2,6 +2,16 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.6.0
+
+### New Features
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `SipSendDtmf(SipSendDtmfRequest)`: send DTMF keys
+  (`0`-`9`, `*`, `#`, `A`-`D`, at most 64) into the ongoing connected call as RFC 4733 telephone-events, e.g. to
+  navigate an IVR the bot called. Call-scoped (`x-ondewo-expected-call-id`) and authenticated like
+  `SipSetCallMediaControl`; refusals are returned in `exception_name` (`CallScopeMismatch`,
+  `CallControlUnauthenticated`, `NoOngoingCall`, `AmdInProgress`, `InvalidDtmf`). Additive.
+
 ## Release ONDEWO SIP API 5.5.2
 
 ### Improvements
