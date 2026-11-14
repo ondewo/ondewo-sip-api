@@ -164,9 +164,8 @@ sequenceDiagram
 The Python client is [ondewo-sip-client-python](https://github.com/ondewo/ondewo-sip-client-python) 5.6.0 or later.
 The values below are fictional.
 
-Send keys through the published method `Sip.send_dtmf`. It attaches only the client's own metadata (the Keycloak
-bearer token, when configured), so use it from a peer that needs no call-scope metadata, e.g. against a container
-deployed without a call-control token:
+Send keys through `Sip.send_dtmf`. Without `metadata=` it attaches only the client's own metadata (the Keycloak
+bearer token, when configured), which is enough against a container deployed without a call-control token:
 
 ```python
 from ondewo.sip.client.client import Client
@@ -183,18 +182,19 @@ else:
     print(f"queued on call {status.call_id}")
 ```
 
-A remote peer of a container that has a call-control token must add the call-scope metadata. The service's stub
-accepts it per call:
+A remote peer of a container that has a call-control token must add the call-scope metadata. Every call-scoped
+method of the client (`end_call`, `transfer_call`, `play_wav_files`, `mute`, `un_mute`, `set_call_media_control`,
+`send_dtmf`, `stream_call_audio`) takes it as `metadata=`, sent after the client's own:
 
 ```python
 from typing import List, Tuple
 
 call_id: str = client.services.sip.get_sip_status().call_id
-metadata: List[Tuple[str, str]] = client.services.sip.metadata + [
+call_metadata: List[Tuple[str, str]] = [
     ("x-ondewo-expected-call-id", call_id),
     ("x-ondewo-sip-call-control-token", "<call-control-token>"),  # never hard-code or log the real token
 ]
-status = client.services.sip.stub.SipSendDtmf(SipSendDtmfRequest(digits="0815#"), metadata=metadata)
+status = client.services.sip.send_dtmf(SipSendDtmfRequest(digits="0815#"), metadata=call_metadata)
 ```
 
 Reading `call_id` right before sending and passing it as `x-ondewo-expected-call-id` makes sure the keys are never
