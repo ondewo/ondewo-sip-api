@@ -2,6 +2,41 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.7.0
+
+### New Features
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) Transfer delegation: in a container started with
+  `SIP_TRANSFER_DELEGATION_ACTIVE=True` a transfer the in-container speech-to-speech pipeline asks for is parked in
+  `SipStatus.delegated_transfer` (field 17, `SipDelegatedTransfer`) and returned as `exception_name=TransferDelegated`;
+  the call is kept. The status reports only `request_id`, `requested_at` and `target_is_phone_number`, never the target
+  or the headers. `SipTransferCallRequest.delegation` (field 4, top-level enum `SipTransferDelegation`) and
+  `delegated_request_id` (field 5) claim it: `SIP_TRANSFER_DELEGATION_CLAIM` returns the target and the headers and
+  stops the expiry, `SIP_TRANSFER_DELEGATION_EXECUTE` sends the transfer of the request, `SIP_TRANSFER_DELEGATION_DISCARD`
+  sends nothing. Claims need the call-control token and the call's `x-ondewo-expected-call-id`; refusals are returned
+  (`DelegatedRequestMismatch`, `CallScopeMismatch`, `CallControlUnauthenticated`, `TransferInProgress`). A parked
+  transfer that is not claimed in time is dropped without a REFER.
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) Warm-transfer outcome notice:
+  `SipSetCallMediaControlRequest.warm_transfer_outcome` (field 5, `SipWarmTransferOutcomeNotice` with `request_id`,
+  `outcome`, `intro_session`, `callee_display_name`, `cause`, `fallback_text`; participant owner only) tells the bot
+  that the warm transfer was declined or the target was unreachable (`SipWarmTransferOutcome`, which also names
+  `SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED`). The pipeline's answer is returned in
+  `SipStatus.warm_transfer_outcome_notice_status` (field 19, `SipWarmTransferOutcomeNoticeStatus`); a refused notice is
+  `exception_name=InvalidWarmTransferOutcomeNotice`.
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `SipStatus.capabilities` (field 18): the optional
+  features of the container as stable tokens, so a client can refuse a feature an older image lacks. First token:
+  `warm-transfer-outcome-notice`.
+
+### Improvements
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `docs/warm_transfer.md`: a hand-written guide to
+  transfer delegation and the warm-transfer outcome notice.
+* Purely additive: no field, enum value or RPC was renumbered or removed, no RPC and no `SipStatus.StatusType` value
+  was added, and every new field's zero value is the behaviour of 5.6.0, so a client built against 5.6.0 stays
+  wire-compatible.
+
+*****************
+
 ## Release ONDEWO SIP API 5.6.0
 
 ### New Features
