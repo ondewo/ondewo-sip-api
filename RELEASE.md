@@ -53,6 +53,8 @@
   on the SIP API: `SipSendDtmf` (metadata, preconditions, pacing, every refusal), how a caller's keys are admitted,
   masked and forwarded to ONDEWO CSI, security, Python examples and limits.
 
+*****************
+
 ## Release ONDEWO SIP API 5.5.2
 
 ### Improvements
