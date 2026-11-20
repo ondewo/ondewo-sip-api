@@ -41,9 +41,11 @@ Please use the issue tracker in this repo for discussions about this API, or the
 .
 ├── Dockerfile.utils
 ├── docs
+│   ├── dtmf.md
 │   ├── index.html
 │   ├── index.md
-│   └── style.css
+│   ├── style.css
+│   └── warm_transfer.md
 ├── install_nvm.sh
 ├── LICENSE
 ├── Makefile
@@ -166,6 +168,13 @@ workflow).
 ## Proto Documentation
 
 The documentation for this, and all other APIs and their available versions, can be found on [ondewo.github.io](https://ondewo.github.io). For Offline usage, it can also be found in the `docs` folder.
+
+A hand-written guide to the DTMF features (`SipSendDtmf`, and how a caller's keys are received and forwarded)
+is [docs/dtmf.md](docs/dtmf.md).
+
+A hand-written guide to transfer delegation and the warm-transfer outcome notice (`SipTransferDelegation`,
+`SipStatus.delegated_transfer`, `SipStatus.capabilities`, `SipWarmTransferOutcomeNotice`) is
+[docs/warm_transfer.md](docs/warm_transfer.md).
 
 As part of the `pre-commit` hooks, `update_githubio` is run. It will preemptively stop if:
 

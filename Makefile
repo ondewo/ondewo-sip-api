@@ -17,7 +17,7 @@
 
 # MUST BE THE SAME AS API in Mayor and Minor Version Number
 # example: API 2.9.0 --> Client 2.9.X
-ONDEWO_SIP_API_VERSION=5.5.2
+ONDEWO_SIP_API_VERSION=5.7.0
 
 # You need to setup an access token at https://github.com/settings/tokens - permissions are important
 GITHUB_GH_TOKEN?=ENTER_YOUR_TOKEN_HERE
@@ -205,7 +205,7 @@ CLIENTS := python nodejs typescript angular js cpp csharp go java php rust
 # returned": unauthenticated (60 requests/hour, so a rate-limited run wrote an empty `tags/`), in an
 # undocumented order, and any new compiler tag silently moved every client's pin mid-release. Move it
 # deliberately; `make check_proto_compiler_is_latest` tells you when a newer tag exists.
-ONDEWO_PROTO_COMPILER_VERSION=5.15.7
+ONDEWO_PROTO_COMPILER_VERSION=5.17.0
 
 CLIENT_GIT_URL_PREFIX?=git@github.com:ondewo/ondewo-sip-client-
 # The RELEASE.md a client's release slices its notes from (the js family keeps it in src/).

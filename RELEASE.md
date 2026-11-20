@@ -2,6 +2,80 @@
 
 *****************
 
+## Release ONDEWO SIP API 5.7.0
+
+### New Features
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) Transfer delegation: in a container started with
+  `SIP_TRANSFER_DELEGATION_ACTIVE=True` a transfer the in-container speech-to-speech pipeline asks for is parked in
+  `SipStatus.delegated_transfer` (field 17, `SipDelegatedTransfer`) and returned as `exception_name=TransferDelegated`;
+  the call is kept. The status reports only `request_id`, `requested_at` and `target_is_phone_number`, never the target
+  or the headers. `SipTransferCallRequest.delegation` (field 4, top-level enum `SipTransferDelegation`) and
+  `delegated_request_id` (field 5) claim it: `SIP_TRANSFER_DELEGATION_CLAIM` returns the target and the headers and
+  stops the expiry, `SIP_TRANSFER_DELEGATION_EXECUTE` sends the transfer of the request, `SIP_TRANSFER_DELEGATION_DISCARD`
+  sends nothing. Claims need the call-control token and the call's `x-ondewo-expected-call-id`; refusals are returned
+  (`DelegatedRequestMismatch`, `CallScopeMismatch`, `CallControlUnauthenticated`, `TransferInProgress`). A parked
+  transfer that is not claimed in time is dropped without a REFER.
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) Warm-transfer outcome notice:
+  `SipSetCallMediaControlRequest.warm_transfer_outcome` (field 5, `SipWarmTransferOutcomeNotice` with `request_id`,
+  `outcome`, `intro_session`, `callee_display_name`, `cause`, `fallback_text`; participant owner only) tells the bot
+  that the warm transfer was declined or the target was unreachable (`SipWarmTransferOutcome`, which also names
+  `SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED`). The pipeline's answer is returned in
+  `SipStatus.warm_transfer_outcome_notice_status` (field 19, `SipWarmTransferOutcomeNoticeStatus`); a refused notice is
+  `exception_name=InvalidWarmTransferOutcomeNotice`.
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `SipStatus.capabilities` (field 18): the optional
+  features of the container as stable tokens, so a client can refuse a feature an older image lacks. First token:
+  `warm-transfer-outcome-notice`.
+
+### Improvements
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `docs/warm_transfer.md`: a hand-written guide to
+  transfer delegation and the warm-transfer outcome notice.
+* Purely additive: no field, enum value or RPC was renumbered or removed, no RPC and no `SipStatus.StatusType` value
+  was added, and every new field's zero value is the behaviour of 5.6.0, so a client built against 5.6.0 stays
+  wire-compatible.
+
+### Toolchain and runtime floors
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) The eleven `ondewo-sip-client-<language>` SDKs of
+  5.7.0 are generated with ondewo-proto-compiler 5.17.0 (`ONDEWO_PROTO_COMPILER_VERSION`, was 5.15.7): protoc 35.1 for
+  every language except cpp. The generated code requires at least these runtimes (newer is fine, older is refused):
+  * Python: `protobuf>=7.35.1,<8` and `grpcio>=1.85.1`, Python >= 3.10 (protobuf 7 dropped 3.9). Every `_pb2.py` is
+    stamped `# Protobuf Python Version: 7.35.1` and every `_pb2_grpc.py` `GRPC_GENERATED_VERSION = '1.85.1'`; both
+    refuse an older runtime at import. `grpcio-tools`, `grpcio-reflection` and `mypy-protobuf` are no longer runtime
+    dependencies of `ondewo-sip-client`.
+  * Java: protobuf-java 4.35.1, grpc-java 1.85.1, proto-google-common-protos 2.82.0.
+  * C#: Google.Protobuf 3.35.1, Grpc.Core.Api / Grpc.Net.Client 2.85.0, Google.Api.CommonProtos 2.17.0.
+  * PHP: `google/protobuf` 5.35.1 (a major step from 4.x; php >= 8.2.0) and `grpc/grpc` 1.85.0.
+  * Go: `google.golang.org/grpc` v1.85.0, `google.golang.org/protobuf` v1.36.12, `go 1.26.0`.
+  * Rust: prost / prost-types 0.14.6, tonic / tonic-prost 0.14.9.
+  * js, typescript: `grpc-web` 2.1.1 and `google-protobuf` ^4.0.3. grpc-web 2.x limits a response to 4 MB unless
+    `maxReceiveMessageSize` is set.
+  * Angular: `grpc-web` 2.1.1 as an EXACT direct dependency plus `"overrides": { "grpc-web": "$grpc-web" }` (an app
+    installing the client needs the same), `@ngx-grpc/*` ~3.1.2, `google-protobuf` ~3.21.4.
+  * Nodejs: `@grpc/grpc-js` 1.14.7 and `google-protobuf` 3.21.4.
+  * Cpp: unchanged, protobuf 3.21.12 / grpc 1.51.1.
+
+*****************
+
+## Release ONDEWO SIP API 5.6.0
+
+### New Features
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `SipSendDtmf(SipSendDtmfRequest)`: send DTMF keys
+  (`0`-`9`, `*`, `#`, `A`-`D`, at most 64) into the ongoing connected call as RFC 4733 telephone-events, e.g. to
+  navigate an IVR the bot called. Call-scoped (`x-ondewo-expected-call-id`) and authenticated like
+  `SipSetCallMediaControl`; refusals are returned in `exception_name` (`CallScopeMismatch`,
+  `CallControlUnauthenticated`, `NoOngoingCall`, `AmdInProgress`, `InvalidDtmf`). Additive.
+
+### Improvements
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) `docs/dtmf.md`: a hand-written guide to DTMF
+  on the SIP API: `SipSendDtmf` (metadata, preconditions, pacing, every refusal), how a caller's keys are admitted,
+  masked and forwarded to ONDEWO CSI, security, Python examples and limits.
+
+*****************
+
 ## Release ONDEWO SIP API 5.5.2
 
 ### Improvements
