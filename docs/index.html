@@ -70,6 +70,8 @@
                       
                         <li><a href="#ondewo.sip.Sip.SipStreamCallAudio" class="title-badge method">SipStreamCallAudio</a></li>
                       
+                        <li><a href="#ondewo.sip.Sip.SipSendDtmf" class="title-badge method">SipSendDtmf</a></li>
+                      
                       </ul>
                       
                     </li>
@@ -113,6 +115,14 @@
                       </li>
                     
                       <li>
+                        <a href="#ondewo.sip.SipDelegatedTransfer" class="title-badge message">SipDelegatedTransfer</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipDelegatedTransfer.HeadersEntry" class="title-badge message">SipDelegatedTransfer.HeadersEntry</a>
+                      </li>
+                    
+                      <li>
                         <a href="#ondewo.sip.SipEndCallRequest" class="title-badge message">SipEndCallRequest</a>
                       </li>
                     
@@ -126,6 +136,10 @@
                     
                       <li>
                         <a href="#ondewo.sip.SipReportAnsweringMachineDetectedRequest" class="title-badge message">SipReportAnsweringMachineDetectedRequest</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipSendDtmfRequest" class="title-badge message">SipSendDtmfRequest</a>
                       </li>
                     
                       <li>
@@ -162,6 +176,10 @@
                     
                       <li>
                         <a href="#ondewo.sip.SipTransferCallRequest.HeadersEntry" class="title-badge message">SipTransferCallRequest.HeadersEntry</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipWarmTransferOutcomeNotice" class="title-badge message">SipWarmTransferOutcomeNotice</a>
                       </li>
                     
                   </ul>
@@ -204,6 +222,18 @@
                     
                       <li>
                         <a href="#ondewo.sip.SipStatus.StatusType" class="title-badge enum">SipStatus.StatusType</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipTransferDelegation" class="title-badge enum">SipTransferDelegation</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipWarmTransferOutcome" class="title-badge enum">SipWarmTransferOutcome</a>
+                      </li>
+                    
+                      <li>
+                        <a href="#ondewo.sip.SipWarmTransferOutcomeNoticeStatus" class="title-badge enum">SipWarmTransferOutcomeNoticeStatus</a>
                       </li>
                     
                   </ul>
@@ -286,6 +316,15 @@ With <code>outcome_timeout_ms &gt; 0</code> see <code>SipTransferCallRequest.out
 party in it, the invited participant included. The refusal is RETURNED as <code>TRANSFER_CALL_FAILED</code> with
 <code>exception_name=ParticipantsPresent</code> and <code>description = reason=participants-present</code>; nothing
 is sent and the call is kept.</p>
+<p>Transfer delegation (see <code>SipTransferDelegation</code>): in a container started with
+<code>SIP_TRANSFER_DELEGATION_ACTIVE=True</code> a transfer that the in-container speech-to-speech pipeline asks for
+on a connected call is not sent. It is parked in <code>SipStatus.delegated_transfer</code> and RETURNED as
+<code>TRANSFER_CALL_FAILED</code> with <code>exception_name=TransferDelegated</code> and
+<code>description = reason=delegated-to-vtsi</code>; the call is kept. A client (ONDEWO VTSI) then claims it with
+<code>delegation</code> and <code>delegated_request_id</code>. A second transfer of the pipeline while one is
+parked is refused with <code>exception_name=TransferInProgress</code>. Without that environment variable, and
+for every request with <code>delegation = SIP_TRANSFER_DELEGATION_UNSPECIFIED</code> from any other peer, the
+transfer is sent as before.</p>
 
 Not idempotent (no idempotency_level): a repeat sends another REFER.
         
@@ -366,6 +405,10 @@ muted while ANY owner holds a mute, and its listening is paused while ANY owner 
 <code>NoOngoingCall</code>, <code>AmdInProgress</code>, <code>CsiMediaControlFailed</code>) and never assigned to
 the shared status. When the pipeline refuses or fails, a requested pause is rolled back and a requested mute is
 kept (the safe direction); the returned fields carry the actual level.</p>
+<p>A request may carry a <code>warm_transfer_outcome</code> notice (participant owner only, refused otherwise with
+<code>exception_name=InvalidWarmTransferOutcomeNotice</code>). The notice is handed to the speech-to-speech
+pipeline whether or not the level changed, and the answer of the pipeline is returned in
+<code>SipStatus.warm_transfer_outcome_notice_status</code>.</p>
 
 Deliberately unmarked although a repeat leaves the level unchanged: a retried attempt can land after a newer
 request of the same owner and restore a stale mute or pause.
@@ -387,6 +430,22 @@ connected call, answering machine detection in progress, bot still speaking at T
 message and then OK.</p>
 
 Not idempotent (no idempotency_level): a stream takes a slot and, in TALK, takes over the call.
+        
+          <h4 id="ondewo.sip.Sip.SipSendDtmf" class="title-badge method">SipSendDtmf</h4>
+
+          <pre>rpc SipSendDtmf (<a href="#ondewo.sip.SipSendDtmfRequest">SipSendDtmfRequest</a>) returns (<a href="#ondewo.sip.SipStatus">SipStatus)</a></pre>
+
+          <p>Send DTMF keys into the ongoing connected call, as RFC 4733 telephone-events (e.g. to navigate an IVR the bot
+called, or for an operator).</p>
+<p>Metadata as for <code>SipSetCallMediaControl</code>: <code>x-ondewo-expected-call-id</code> must equal
+<code>SipStatus.call_id</code> of the ongoing call; a peer outside the container presents
+<code>x-ondewo-sip-call-control-token</code> when the container has one.</p>
+<p>Returns the live status. Refusals are RETURNED in <code>exception_name</code> / <code>description</code>
+(<code>CallScopeMismatch</code>, <code>CallControlUnauthenticated</code>, <code>NoOngoingCall</code>,
+<code>AmdInProgress</code>, <code>InvalidDtmf</code>) and never assigned to the shared status. The keys are never
+logged in clear.</p>
+
+Not idempotent (no idempotency_level): a retried attempt sends the keys again.
         
 
         
@@ -800,6 +859,94 @@ ends </p></td>
 
         
       
+        <h3 id="ondewo.sip.SipDelegatedTransfer" class="title-badge message">SipDelegatedTransfer</h3>
+        <p><p>A transfer that the in-container speech-to-speech pipeline asked for and the container handed to a client instead</p><p>of sending it (see <code>SipTransferDelegation</code>). Call-scoped: empty when no transfer is parked, when no call</p><p>is ongoing, and after the call ended.</p></p><p><p><code>SipGetSipStatus</code>, <code>SipGetSipStatusHistory</code> and every other response report only</p><p><code>request_id</code>, <code>requested_at</code> and <code>target_is_phone_number</code>. The target and the headers</p><p>are filled ONLY in the response of a <code>SIP_TRANSFER_DELEGATION_CLAIM</code>.</p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>request_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Identifier of the parked transfer, a UUID minted by ONDEWO SIP. Sent back as
+<code>SipTransferCallRequest.delegated_request_id</code>. Empty when no transfer is parked </p></td>
+                </tr>
+              
+                <tr>
+                  <td>requested_at</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>When the pipeline asked for the transfer </p></td>
+                </tr>
+              
+                <tr>
+                  <td>target_is_phone_number</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p><code>true</code> when the target is a phone number by the transfer target policy of ONDEWO SIP (a leading
+<code>+</code> followed by digits, or a trunk-routed number), <code>false</code> for an account name such as a
+softphone </p></td>
+                </tr>
+              
+                <tr>
+                  <td>transfer_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The target the pipeline asked for, already checked by the transfer target policy. Only in the response of a
+<code>SIP_TRANSFER_DELEGATION_CLAIM</code>, empty everywhere else </p></td>
+                </tr>
+              
+                <tr>
+                  <td>headers</td>
+                  <td><a href="#ondewo.sip.SipDelegatedTransfer.HeadersEntry">SipDelegatedTransfer.HeadersEntry</a></td>
+                  <td>repeated</td>
+                  <td><p>The headers the pipeline sent with the transfer. Only in the response of a
+<code>SIP_TRANSFER_DELEGATION_CLAIM</code>, empty everywhere else </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ondewo.sip.SipDelegatedTransfer.HeadersEntry" class="title-badge message">SipDelegatedTransfer.HeadersEntry</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>key</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>value</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="ondewo.sip.SipEndCallRequest" class="title-badge message">SipEndCallRequest</h3>
         <p><p>Ends an ongoing call of the active SIP session of the active SIP account</p></p>
 
@@ -935,6 +1082,32 @@ Also a non-default SIP port can be specified via <code>sip-user-1@mydomain.com:5
 
         
       
+        <h3 id="ondewo.sip.SipSendDtmfRequest" class="title-badge message">SipSendDtmfRequest</h3>
+        <p><p>Request of <code>SipSendDtmf</code></p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>digits</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>The keys to send, in order: <code>0</code>-<code>9</code>, <code>*</code>, <code>#</code>,
+<code>A</code>-<code>D</code>; at most 64. Any other character refuses the request (<code>InvalidDtmf</code>)
+and sends nothing </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
         <h3 id="ondewo.sip.SipSetCallMediaControlRequest" class="title-badge message">SipSetCallMediaControlRequest</h3>
         <p><p>Request of <code>SipSetCallMediaControl</code></p></p>
 
@@ -979,6 +1152,21 @@ reports the last participant gone sends <code>false</code>.</p>
 into a conference bridge transfers every party in it. A request that would mark participants present while a
 transfer of the call is in flight is refused with <code>exception_name=TransferInProgress</code> and changes
 nothing. Cleared when the call ends</p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>warm_transfer_outcome</td>
+                  <td><a href="#ondewo.sip.SipWarmTransferOutcomeNotice">SipWarmTransferOutcomeNotice</a></td>
+                  <td></td>
+                  <td><p><p>Optional, only with <code>MEDIA_CONTROL_OWNER_PARTICIPANT</code> (any other owner, an outcome other than
+<code>SIP_WARM_TRANSFER_OUTCOME_DECLINED</code> / <code>SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE</code>, or an empty
+<code>request_id</code> is refused with <code>exception_name=InvalidWarmTransferOutcomeNotice</code> and changes
+nothing). The outcome of a warm transfer that the bot must tell the caller, sent with the request that releases
+the participant hold, so the bot speaks only once it can.</p>
+<p>Handed to the speech-to-speech pipeline after the level, also when the level did not change; the answer is
+returned in <code>SipStatus.warm_transfer_outcome_notice_status</code>. A notice the pipeline did not answer is
+kept and handed over again until it answers, and dropped when the call ends. Unset (default): no notice, exactly
+as before this field existed.</p> </p></td>
                 </tr>
               
             </tbody>
@@ -1214,6 +1402,38 @@ when the call ends </p></td>
 otherwise, <code>0</code> when unknown). Call-scoped </p></td>
                 </tr>
               
+                <tr>
+                  <td>delegated_transfer</td>
+                  <td><a href="#ondewo.sip.SipDelegatedTransfer">SipDelegatedTransfer</a></td>
+                  <td></td>
+                  <td><p>The transfer parked for a client to claim (see <code>SipTransferDelegation</code>). Unset (empty) when no transfer
+is parked, which is always the case in a container started without <code>SIP_TRANSFER_DELEGATION_ACTIVE=True</code>.
+Call-scoped </p></td>
+                </tr>
+              
+                <tr>
+                  <td>capabilities</td>
+                  <td><a href="#string">string</a></td>
+                  <td>repeated</td>
+                  <td><p><p>Optional features this container supports, as stable tokens. Fixed for the life of the container, so it is the
+same on every status. Empty (default): none of them, as for a container built before this field existed. Clients
+ignore tokens they do not know.</p>
+<ul>
+  <li><code>warm-transfer-outcome-notice</code>: <code>SipSetCallMediaControlRequest.warm_transfer_outcome</code>
+  is handed to the speech-to-speech pipeline, and the pipeline tells the caller.</li>
+</ul> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>warm_transfer_outcome_notice_status</td>
+                  <td><a href="#ondewo.sip.SipWarmTransferOutcomeNoticeStatus">SipWarmTransferOutcomeNoticeStatus</a></td>
+                  <td></td>
+                  <td><p>Answer of the speech-to-speech pipeline to the <code>warm_transfer_outcome</code> notice of a
+<code>SipSetCallMediaControl</code> request. Only in the response of that request;
+<code>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED</code> everywhere else and when the request carried no
+notice </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -1328,6 +1548,25 @@ Clamped to 10000.</p>
 answer, unreachable) the caller is lost. Validate targets up front, or use a WARM transfer.</p> </p></td>
                 </tr>
               
+                <tr>
+                  <td>delegation</td>
+                  <td><a href="#ondewo.sip.SipTransferDelegation">SipTransferDelegation</a></td>
+                  <td></td>
+                  <td><p><p>Optional. Claims the transfer parked in <code>SipStatus.delegated_transfer</code> (see
+<code>SipTransferDelegation</code>). <code>SIP_TRANSFER_DELEGATION_UNSPECIFIED</code> (default): an ordinary
+transfer, exactly as before this field existed.</p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>delegated_request_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p><p>Required with every <code>delegation</code> other than <code>SIP_TRANSFER_DELEGATION_UNSPECIFIED</code>, ignored
+otherwise: must equal <code>SipStatus.delegated_transfer.request_id</code> of the parked transfer, otherwise the
+request is refused with <code>exception_name=DelegatedRequestMismatch</code> and nothing is sent. Empty (default):
+no delegated transfer is claimed.</p> </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -1357,6 +1596,69 @@ answer, unreachable) the caller is lost. Validate targets up front, or use a WAR
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="ondewo.sip.SipWarmTransferOutcomeNotice" class="title-badge message">SipWarmTransferOutcomeNotice</h3>
+        <p><p>One-shot notice of a warm-transfer outcome for the bot. The pipeline tells the caller at most once per</p><p><code>request_id</code> and call. Carries no reason text the target gave</p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>request_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Identifier of the transfer request of the client (ONDEWO VTSI). Required; the notice is delivered at most once
+per call for one identifier </p></td>
+                </tr>
+              
+                <tr>
+                  <td>outcome</td>
+                  <td><a href="#ondewo.sip.SipWarmTransferOutcome">SipWarmTransferOutcome</a></td>
+                  <td></td>
+                  <td><p>The outcome </p></td>
+                </tr>
+              
+                <tr>
+                  <td>intro_session</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional: NLU session name of the session in which the transfer target was introduced, so the pipeline can
+relay what the target said. Empty when there was no intro </p></td>
+                </tr>
+              
+                <tr>
+                  <td>callee_display_name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional: display name of the transfer target, at most 128 characters </p></td>
+                </tr>
+              
+                <tr>
+                  <td>cause</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional: a stable token naming why the transfer did not complete, e.g. <code>target-hung-up</code>,
+<code>target-refused</code>, <code>voicemail-suspected</code>. Never free text </p></td>
+                </tr>
+              
+                <tr>
+                  <td>fallback_text</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional: the sentence the pipeline speaks itself when it cannot have the NLU phrase the outcome, rendered by the
+client. Never contains a reason the target gave. Empty: the pipeline has no sentence of its own to fall back on </p></td>
                 </tr>
               
             </tbody>
@@ -1878,6 +2180,131 @@ answering machine, a fax, a network announcement, ... apart. The call then ends 
 <code>Answering machine detected with left voice message and hang up</code>,
 <code>Answering machine detected, call ended by the answering machine</code> or
 <code>Answering machine detected, call ended by the answering machine after leaving a voice message</code></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="ondewo.sip.SipTransferDelegation" class="title-badge enum">SipTransferDelegation</h3>
+        <p><p>How a <code>SipTransferCall</code> handles a transfer that the container parked in</p><p><code>SipStatus.delegated_transfer</code> instead of sending it.</p></p><p><p>Every value other than <code>SIP_TRANSFER_DELEGATION_UNSPECIFIED</code> requires the</p><p><code>x-ondewo-sip-call-control-token</code> metadatum (otherwise <code>CallControlUnauthenticated</code>) and the</p><p><code>x-ondewo-expected-call-id</code> metadatum naming the ongoing call (missing or different:</p><p><code>CallScopeMismatch</code>), plus <code>delegated_request_id</code> (otherwise</p><p><code>DelegatedRequestMismatch</code>). Refusals are RETURNED in <code>exception_name</code> /</p><p><code>description</code> and never assigned to the shared status.</p></p><p><p>A parked transfer that is neither claimed nor ended within <code>SIP_TRANSFER_DELEGATION_CLAIM_TIMEOUT_S</code> is</p><p>dropped WITHOUT a REFER, and the pipeline is told with <code>SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED</code>. A</p><p>claimed transfer never expires.</p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>SIP_TRANSFER_DELEGATION_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p>No delegated transfer is claimed: the request is an ordinary transfer, exactly as before this field existed</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_TRANSFER_DELEGATION_CLAIM</td>
+                <td>1</td>
+                <td><p>Claim the parked transfer and send nothing. The response carries the full target and headers in
+<code>SipStatus.delegated_transfer.transfer_id</code> / <code>headers</code>, and the parked transfer no longer
+expires. It stays parked until <code>SIP_TRANSFER_DELEGATION_EXECUTE</code>, <code>SIP_TRANSFER_DELEGATION_DISCARD</code>
+or the end of the call. A repeated claim answers the same</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_TRANSFER_DELEGATION_EXECUTE</td>
+                <td>2</td>
+                <td><p>End the delegation and send the transfer of THIS request (<code>transfer_id</code>, <code>headers</code>,
+<code>outcome_timeout_ms</code>) as an ordinary <code>SipTransferCall</code>, with the same outcomes and refusals</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_TRANSFER_DELEGATION_DISCARD</td>
+                <td>3</td>
+                <td><p>End the delegation and send nothing; the call stays with the bot, e.g. because the client handles the transfer
+itself (a warm transfer with an intro)</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="ondewo.sip.SipWarmTransferOutcome" class="title-badge enum">SipWarmTransferOutcome</h3>
+        <p><p>Outcome of a warm transfer that the bot tells the caller</p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p>No outcome</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_DECLINED</td>
+                <td>1</td>
+                <td><p>The transfer target declined the call; the caller stays with the bot</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE</td>
+                <td>2</td>
+                <td><p>The transfer target could not be reached: busy, no answer, no decision, or no intro possible; the caller stays
+with the bot</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED</td>
+                <td>3</td>
+                <td><p>A transfer parked in <code>SipStatus.delegated_transfer</code> was not claimed in time and was dropped without a
+REFER. Set by ONDEWO SIP itself towards the pipeline, never accepted from a client</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="ondewo.sip.SipWarmTransferOutcomeNoticeStatus" class="title-badge enum">SipWarmTransferOutcomeNoticeStatus</h3>
+        <p><p>Answer of the speech-to-speech pipeline to a <code>SipWarmTransferOutcomeNotice</code></p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p>No notice was carried</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_QUEUED</td>
+                <td>1</td>
+                <td><p>The pipeline accepted the notice and will tell the caller, unless the call ends first</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DUPLICATE</td>
+                <td>2</td>
+                <td><p>The pipeline already has a notice with this <code>request_id</code> on this call; nothing new is told</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DISABLED</td>
+                <td>3</td>
+                <td><p>The pipeline does not tell the caller about warm-transfer outcomes (switched off); the notice is dropped</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_INVALID</td>
+                <td>4</td>
+                <td><p>The pipeline refused the notice as malformed; the notice is dropped</p></td>
+              </tr>
+            
+              <tr>
+                <td>SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_PENDING</td>
+                <td>5</td>
+                <td><p>The pipeline did not answer (unreachable, or an older pipeline without the notice). The notice is kept and handed
+over again until it answers or the call ends</p></td>
               </tr>
             
           </tbody>
