@@ -179,8 +179,8 @@ runs it against fake client repositories. Invariants, each of which a past run v
   `^(ONDEWO_)?SIP_API_GIT_BRANCH\s*=`). Unanchored, they also rewrote lines that merely mention the
   variable (the go client's go.mod check echoes `ONDEWO_SIP_VERSION=${ONDEWO_SIP_VERSION}`, a csharp
   comment shows `make build ONDEWO_SIP_VERSION=1.2.3`).
-- **The proto compiler is pinned** (`ONDEWO_PROTO_COMPILER_VERSION`, 5.15.7), not "the first tag the API
-  returns". 5.15.7 is the newest tag and a superset of 5.15.5, which nine SDKs were on; angular needs it
+- **The proto compiler is pinned** (`ONDEWO_PROTO_COMPILER_VERSION`, 5.17.0 since 5.7.0; was 5.15.7), not "the first tag the API
+  returns". 5.15.7 was the newest tag before 5.17.0 and a superset of 5.15.5, which nine SDKs were on; angular needs it
   (it omits the client-streaming and bidi RPCs angular cannot generate, which `SipStreamCallAudio` is) and
   the typescript client gets the transitive google-dependency fix. Python was on 5.15.3; nothing for
   python changed after it.

@@ -35,6 +35,27 @@
   was added, and every new field's zero value is the behaviour of 5.6.0, so a client built against 5.6.0 stays
   wire-compatible.
 
+### Toolchain and runtime floors
+
+* [[OND236-120]](https://ondewo.atlassian.net/browse/OND236-120) The eleven `ondewo-sip-client-<language>` SDKs of
+  5.7.0 are generated with ondewo-proto-compiler 5.17.0 (`ONDEWO_PROTO_COMPILER_VERSION`, was 5.15.7): protoc 35.1 for
+  every language except cpp. The generated code requires at least these runtimes (newer is fine, older is refused):
+  * Python: `protobuf>=7.35.1,<8` and `grpcio>=1.85.1`, Python >= 3.10 (protobuf 7 dropped 3.9). Every `_pb2.py` is
+    stamped `# Protobuf Python Version: 7.35.1` and every `_pb2_grpc.py` `GRPC_GENERATED_VERSION = '1.85.1'`; both
+    refuse an older runtime at import. `grpcio-tools`, `grpcio-reflection` and `mypy-protobuf` are no longer runtime
+    dependencies of `ondewo-sip-client`.
+  * Java: protobuf-java 4.35.1, grpc-java 1.85.1, proto-google-common-protos 2.82.0.
+  * C#: Google.Protobuf 3.35.1, Grpc.Core.Api / Grpc.Net.Client 2.85.0, Google.Api.CommonProtos 2.17.0.
+  * PHP: `google/protobuf` 5.35.1 (a major step from 4.x; php >= 8.2.0) and `grpc/grpc` 1.85.0.
+  * Go: `google.golang.org/grpc` v1.85.0, `google.golang.org/protobuf` v1.36.12, `go 1.26.0`.
+  * Rust: prost / prost-types 0.14.6, tonic / tonic-prost 0.14.9.
+  * js, typescript: `grpc-web` 2.1.1 and `google-protobuf` ^4.0.3. grpc-web 2.x limits a response to 4 MB unless
+    `maxReceiveMessageSize` is set.
+  * Angular: `grpc-web` 2.1.1 as an EXACT direct dependency plus `"overrides": { "grpc-web": "$grpc-web" }` (an app
+    installing the client needs the same), `@ngx-grpc/*` ~3.1.2, `google-protobuf` ~3.21.4.
+  * Nodejs: `@grpc/grpc-js` 1.14.7 and `google-protobuf` 3.21.4.
+  * Cpp: unchanged, protobuf 3.21.12 / grpc 1.51.1.
+
 *****************
 
 ## Release ONDEWO SIP API 5.6.0
